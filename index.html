@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Pişti Pro - Final Versiyon</title>
+    <style>
+        :root { --bg: #0d2a1a; --gold: #f1c40f; --card-w: 85px; --card-h: 125px; }
+        body { background: radial-gradient(circle, #1a472a 0%, var(--bg) 100%); color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+        
+        @keyframes pistiPop {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; filter: drop-shadow(0 0 30px gold); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        }
+        #pisti-efekt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; font-weight: bold; color: var(--gold); text-shadow: 0 0 20px black; pointer-events: none; z-index: 1000; display: none; }
+        .pisti-anim { display: block !important; animation: pistiPop 1.5s ease-out forwards; }
+        
+        .panel { background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; margin-top: 30px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 420px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        #oyun-alani { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 10px; position: relative; }
+        
+        button { padding: 12px; background: var(--gold); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px; width: 100%; transition: 0.3s; }
+        button:hover { opacity: 0.8; transform: scale(1.02); }
+        .cikis-yap-btn { background: #e74c3c; color: white; width: auto; padding: 5px 12px; font-size: 12px; position: absolute; top: 10px; right: 10px; border-radius: 5px; }
+        .ayril-btn { background: #c0392b !important; color: white !important; width: auto !important; padding: 8px 20px !important; position: absolute; top: 10px; right: 20px; z-index: 10; }
+
+        .masa { width: 90%; height: 260px; border: 3px solid rgba(241, 196, 15, 0.4); border-radius: 125px; background: rgba(0,0,0,0.2); margin: 15px 0; position: relative; overflow: hidden; }
+        .el { display: flex; gap: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; min-height: 140px; }
+        .kart { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 5px 10px rgba(0,0,0,0.4); border: 1px solid #ccc; position: absolute; transition: 0.3s ease; }
+        .el .kart { position: relative; cursor: pointer; }
+        .oyuncu-etiket { font-size: 18px; font-weight: bold; color: var(--gold); margin: 5px 0; }
+
+        .form-link { font-size: 14px; cursor: pointer; color: #bbb; margin-top: 15px; }
+        .form-link span { color: var(--gold); font-weight: bold; text-decoration: underline; }
+
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; margin-top: 10px; color: white; }
+        th, td { padding: 8px; border: 1px solid rgba(241, 196, 15, 0.2); }
+        th { background: var(--gold); color: black; }
+        input, select { padding: 12px; border-radius: 8px; border: none; margin: 8px 0; font-size: 15px; }
+
+        .son-bes-item { width: 18px; height: 18px; border-radius: 3px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin: 0 1px; }
+        .win { background: #2ecc71; }
+        .lose { background: #e74c3c; }
+    </style>
+</head>
+<body>
+
+    <div id="pisti-efekt">PİŞTİ!</div>
+
+    <h1>PİŞTİ PRO</h1>
+
+    <div id="giris-ekrani" class="panel">
+        <h2 id="form-baslik" style="color: var(--gold); margin-bottom: 20px;">Giriş Yap</h2>
+        <div id="kayit-ozel-alan" style="display: none;">
+            <input type="text" id="adSoyad" placeholder="Ad Soyad" style="width: 85%;">
+        </div>
+        <input type="email" id="email" placeholder="E-posta" style="width: 85%;">
+        <input type="password" id="sifre" placeholder="Şifre" style="width: 85%;">
+        <div style="margin-top: 10px;">
+            <button id="ana-islem-btn" onclick="girisYap()" style="background:#3498db; color:white;">Giriş Yap</button>
+            <p id="form-degistir-text" class="form-link">
+                Hesabınız yok mu? <span onclick="toggleForm('kayit')">Kayıt Ol</span>
+            </p>
+        </div>
+    </div>
+
+    <div id="lobi-ekrani" class="panel" style="display:none;">
+        <button class="cikis-yap-btn" onclick="otaturumuKapat()">Oturumu Kapat</button>
+        <div id="profil-bilgi" style="margin-bottom:15px; color:var(--gold); border-bottom:1px solid #444; padding-bottom:10px;"></div>
+        <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px;">
+            <select id="mod-secim">
+                <option value="bot">Bot (Tek)</option>
+                <option value="2">2 Kişilik</option>
+                <option value="4">Eşli (2v2)</option>
+            </select>
+            <input type="number" id="bitis-puani" value="101" style="width:60px;">
+        </div>
+        <button onclick="masaKur()">Masa Kur</button>
+        <button onclick="liderlikTablosuGoster()" style="background:#9b59b6; color:white;">Liderlik Tablosu</button>
+        <div id="liderlik-listesi"></div>
+        <hr>
+        <div id="masa-listesi">Masalar yükleniyor...</div>
+    </div>
+
+    <div id="oyun-alani">
+        <button class="ayril-btn" onclick="oyundanAyril()">Masadan Ayrıl</button>
+        <div id="rakip-ismi" class="oyuncu-etiket">Oyuncular Bekleniyor...</div>
+        <div id="durum" style="font-weight: bold; color: var(--gold); margin-bottom: 5px;">Bağlanılıyor...</div>
+        <div class="masa" id="yerdeki-kartlar"></div>
+        <div id="benim-ismim" class="oyuncu-etiket">Siz</div>
+        <div class="el" id="benim-elim"></div>
+        <div id="skor-tablosu-konteynir" style="width: 90%; max-width: 600px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>El No</th>
+                        <th id="th-oyuncu1">1. Taraf</th>
+                        <th id="th-oyuncu2">2. Taraf</th>
+                    </tr>
+                </thead>
+                <tbody id="tablo-govde"></tbody>
+            </table>
+            <button id="lobiye-don" style="display:none; margin-top:15px;" onclick="location.reload()">Lobiye Dön</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBBiXjQRhUSXwbgoOmcKQ3Gq0UKplZAZBY",
+            authDomain: "pisti-f0c29.firebaseapp.com",
+            databaseURL: "https://pisti-f0c29-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "pisti-f0c29",
+            storageBucket: "pisti-f0c29.firebasestorage.app",
+            messagingSenderId: "85802639604",
+            appId: "1:85802639604:web:98ffe6d21f3d1651f0bea1"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let aktifUser = null, aktifMasaId = null, benimRolum = null, benimIsmim = "";
+
+        window.toggleForm = (mod) => {
+            const kayitAlani = document.getElementById('kayit-ozel-alan');
+            const baslik = document.getElementById('form-baslik');
+            const btn = document.getElementById('ana-islem-btn');
+            const text = document.getElementById('form-degistir-text');
+            if(mod === 'kayit') {
+                kayitAlani.style.display = 'block';
+                baslik.textContent = 'Kayıt Ol';
+                btn.textContent = 'Kayıt Ol';
+                btn.onclick = () => window.kayitOl();
+                text.innerHTML = `Zaten hesabınız var mı? <span onclick="toggleForm('giris')">Giriş Yap</span>`;
+            } else {
+                kayitAlani.style.display = 'none';
+                baslik.textContent = 'Giriş Yap';
+                btn.textContent = 'Giriş Yap';
+                btn.onclick = () => window.girisYap();
+                text.innerHTML = `Hesabınız yok mu? <span onclick="toggleForm('kayit')">Kayıt Ol</span>`;
+            }
+        };
+
+        window.kayitOl = () => {
+            const ad = document.getElementById('adSoyad').value;
+            const m = document.getElementById('email').value, s = document.getElementById('sifre').value;
+            if(!ad) return alert("Lütfen adınızı girin.");
+            createUserWithEmailAndPassword(auth, m, s).then(res => {
+                set(ref(db, 'users/' + res.user.uid), { adSoyad: ad, email: m, genelPuan: 0, oyunSayisi: 0, galibiyet: 0, sonBes: [] });
+            }).catch(e => alert("Kayıt hatası: " + e.message));
+        };
+
+        window.girisYap = () => {
+            const m = document.getElementById('email').value, s = document.getElementById('sifre').value;
+            signInWithEmailAndPassword(auth, m, s).catch(e => alert("Giriş hatası: " + e.message));
+        };
+
+        window.otaturumuKapat = () => { if(confirm("Çıkış yapmak istediğinize emin misiniz?")) signOut(auth).then(() => location.reload()); };
+
+        onAuthStateChanged(auth, user => { 
+            if(user) { 
+                aktifUser = user; 
+                document.getElementById('giris-ekrani').style.display='none'; 
+                document.getElementById('lobi-ekrani').style.display='block';
+                onValue(ref(db, `users/${user.uid}`), s => {
+                    const d = s.val();
+                    if(d) {
+                        benimIsmim = d.adSoyad;
+                        document.getElementById('profil-bilgi').innerHTML = `<b>${d.adSoyad}</b><br>Genel Puan: ${d.genelPuan || 0}`;
+                    }
+                });
+                lobiTakip(); 
+            } else {
+                document.getElementById('giris-ekrani').style.display='block';
+                document.getElementById('lobi-ekrani').style.display='none';
+            }
+        });
+
+        function lobiTakip() {
+            onValue(ref(db, 'lobiler/'), snap => {
+                const list = document.getElementById('masa-listesi'); list.innerHTML = "";
+                const data = snap.val();
+                if(!data) { list.innerHTML = "Aktif masa yok."; return; }
+                for(let id in data) {
+                    if(data[id].durum === "bekliyor") {
+                        const count = Object.keys(data[id].oyuncular).length;
+                        const modStr = data[id].mod === "4" ? "Eşli" : "2 Kişilik";
+                        const div = document.createElement('div');
+                        div.style.margin = "10px 0";
+                        const isOwner = data[id].oyuncular.oyuncu1.uid === aktifUser.uid;
+                        div.innerHTML = `<span>[${modStr}] ${data[id].oyuncular.oyuncu1.isim} Masası (${count}/${data[id].mod === "4" ? 4 : 2})</span> ` + 
+                            (isOwner ? `<button onclick="masaSil('${id}')" style="width: auto; padding: 5px 15px; background: #e74c3c;">Masayı Sil</button>` : `<button onclick="masaKatil('${id}')" style="width: auto; padding: 5px 15px;">Katıl</button>`);
+                        list.appendChild(div);
+                    }
+                }
+            });
+        }
+
+        window.masaSil = async (id) => {
+            if(confirm("Masayı silmek istediğinize emin misiniz?")) {
+                await remove(ref(db, 'lobiler/' + id));
+            }
+        };
+
+        window.masaKur = async () => {
+            const mod = document.getElementById('mod-secim').value, bitis = document.getElementById('bitis-puani').value, id = "masa_" + Date.now();
+            const yeniMasa = { 
+                mod: mod, hedef: parseInt(bitis), durum: mod === "bot" ? "basladi" : "bekliyor", 
+                sira: "oyuncu1", sonKazan: "oyuncu1", masaKartlari: [], skorGecmisi: [], 
+                oyuncular: { oyuncu1: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0 } } 
+            };
+            if(mod === "bot") { 
+                yeniMasa.oyuncular.oyuncu2 = { uid: "BOT", isim: "Bilgisayar", puan: 0, alinan: [], toplamSkor: 0 }; 
+                const d = desteYap(); yeniMasa.masaKartlari = d.splice(0,4); yeniMasa.oyuncular.oyuncu1.el = d.splice(0,4); yeniMasa.oyuncular.oyuncu2.el = d.splice(0,4); yeniMasa.deste = d; 
+            }
+            await set(ref(db, 'lobiler/' + id), yeniMasa); masaGiris(id, "oyuncu1");
+        };
+
+        window.masaKatil = async (id) => {
+            const snap = await get(ref(db, `lobiler/${id}`));
+            const oyun = snap.val();
+            const idx = Object.keys(oyun.oyuncular).length + 1;
+            const rol = "oyuncu" + idx;
+            let up = { [`oyuncular/${rol}`]: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0 } };
+            const max = oyun.mod === "4" ? 4 : 2;
+            if(idx === max) {
+                const d = desteYap(); up.durum = "basladi"; up.masaKartlari = d.splice(0,4); up.deste = d;
+                for(let i=1; i<=max; i++) up[`oyuncular/oyuncu${i}/el`] = d.splice(0,4);
+            }
+            await update(ref(db, `lobiler/${id}`), up); masaGiris(id, rol);
+        };
+
+        function masaGiris(id, rol) {
+            aktifMasaId = id; benimRolum = rol;
+            document.getElementById('lobi-ekrani').style.display = 'none'; document.getElementById('oyun-alani').style.display = 'flex';
+            onValue(ref(db, `lobiler/${id}`), snap => { 
+                const data = snap.val(); 
+                if(data) { oyunGuncelle(data); if(data.durum === "basladi" && data.mod === "bot" && data.sira === "oyuncu2") setTimeout(botHamlesi, 1000); } 
+            });
+        }
+
+        function oyunGuncelle(data) {
+            const yer = document.getElementById('yerdeki-kartlar'), elDiv = document.getElementById('benim-elim');
+            if(data.mod === "4") {
+                document.getElementById('th-oyuncu1').textContent = `1. Takım (${data.oyuncular.oyuncu1.isim} + ${data.oyuncular.oyuncu3?.isim || "?"})`;
+                document.getElementById('th-oyuncu2').textContent = `2. Takım (${data.oyuncular.oyuncu2?.isim || "?"} + ${data.oyuncular.oyuncu4?.isim || "?"})`;
+            } else {
+                document.getElementById('th-oyuncu1').textContent = data.oyuncular.oyuncu1.isim;
+                document.getElementById('th-oyuncu2').textContent = data.oyuncular.oyuncu2 ? data.oyuncular.oyuncu2.isim : "Bekleniyor...";
+            }
+            if(data.durum === "bitti") {
+                yer.style.display = "none"; elDiv.style.display = "none";
+                document.getElementById('durum').innerHTML = "🏆 OYUN BİTTİ 🏆";
+                document.getElementById('lobiye-don').style.display = "block";
+                skorTablosuGuncelle(data); return;
+            }
+            document.getElementById('durum').textContent = data.sira === benimRolum ? "SIRA SİZDE" : "RAKİPTE...";
+            document.getElementById('benim-ismim').textContent = benimIsmim + " (Siz)";
+            yer.innerHTML = "";
+            const mk = data.masaKartlari || [];
+            let gap = Math.max(10, Math.min(25, 350 / (mk.length + 1)));
+            mk.forEach((k, i) => {
+                const div = document.createElement('div'); div.innerHTML = kartHtml(k, i, false);
+                const kd = div.firstChild; kd.style.left = `calc(50% + ${(i * gap) - (mk.length * gap / 2)}px)`;
+                kd.style.top = "50%"; kd.style.transform = "translateY(-50%)"; kd.style.zIndex = i;
+                if(i === mk.length - 1) kd.style.border = "2px solid var(--gold)";
+                yer.appendChild(kd);
+            });
+            elDiv.innerHTML = "";
+            (data.oyuncular[benimRolum]?.el || []).forEach((k, i) => {
+                const div = document.createElement('div'); div.innerHTML = kartHtml(k, i, true);
+                elDiv.appendChild(div.firstChild);
+            });
+            skorTablosuGuncelle(data);
+        }
+
+        window.kartAt = async (idx) => {
+            const snap = await get(ref(db, `lobiler/${aktifMasaId}`)); const oyun = snap.val();
+            if(!oyun || oyun.sira !== benimRolum) return;
+            const hamle = calculateMove(oyun, benimRolum, idx);
+            await update(ref(db, `lobiler/${aktifMasaId}`), hamle.updates);
+            if(hamle.updates.durum === "hesapla") finalHesapla(aktifMasaId);
+        };
+
+        function calculateMove(oyun, suankiSira, idx) {
+            let el = [...oyun.oyuncular[suankiSira].el]; let atilan = el.splice(idx, 1)[0];
+            let masa = oyun.masaKartlari || []; let pPuan = oyun.oyuncular[suankiSira].puan || 0;
+            let alinan = oyun.oyuncular[suankiSira].alinan || []; let sonKazan = oyun.sonKazan;
+            let max = oyun.mod === "4" ? 4 : 2;
+            let currentNum = parseInt(suankiSira.replace("oyuncu", ""));
+            let siradaki = "oyuncu" + ((currentNum % max) + 1);
+            if(masa.length > 0) {
+                let ust = masa[masa.length - 1];
+                if(atilan.value === "J" || atilan.value === ust.value) {
+                    sonKazan = suankiSira;
+                    if(masa.length === 1 && atilan.value === ust.value) { 
+                        pistiEfektiGoster(atilan.value === "J" ? "VALE PİŞTİ!" : "PİŞTİ!");
+                        pPuan += (atilan.value === "J") ? 25 : 10;
+                    }
+                    alinan = [...alinan, ...masa, atilan]; masa = [];
+                } else masa.push(atilan);
+            } else masa.push(atilan);
+            let updates = { masaKartlari: masa, sira: siradaki, sonKazan: sonKazan };
+            updates[`oyuncular/${suankiSira}/el`] = el; updates[`oyuncular/${suankiSira}/puan`] = pPuan; updates[`oyuncular/${suankiSira}/alinan`] = alinan;
+            let bittiMi = true;
+            for(let i=1; i<=max; i++) { if((i === currentNum ? el : (oyun.oyuncular["oyuncu"+i].el || [])).length > 0) bittiMi = false; }
+            if(bittiMi) {
+                if(oyun.deste && oyun.deste.length > 0) {
+                    let d = [...oyun.deste]; for(let i=1; i<=max; i++) updates[`oyuncular/oyuncu${i}/el`] = d.splice(0, 4);
+                    updates.deste = d;
+                } else updates.durum = "hesapla";
+            }
+            return { updates };
+        }
+
+        async function finalHesapla(id) {
+            const snap = await get(ref(db, `lobiler/${id}`)); const oyun = snap.val();
+            const mod = oyun.mod;
+            const getPuan = (cards) => {
+                let res = 0;
+                (cards || []).forEach(k => {
+                    if(k.value === "A" || k.value === "J") res += 1;
+                    if(k.suit === "♣" && k.value === "2") res += 2;
+                    if(k.suit === "♦" && k.value === "10") res += 3;
+                });
+                return res;
+            };
+            let t1 = 0, t2 = 0, t1k = 0, t2k = 0;
+            if(mod === "4") {
+                let o1a = [...(oyun.oyuncular.oyuncu1.alinan || [])], o2a = [...(oyun.oyuncular.oyuncu2.alinan || [])], o3a = [...(oyun.oyuncular.oyuncu3.alinan || [])], o4a = [...(oyun.oyuncular.oyuncu4.alinan || [])];
+                if(oyun.masaKartlari) { const sk = oyun.sonKazan; if(sk==="oyuncu1")o1a.push(...oyun.masaKartlari); else if(sk==="oyuncu2")o2a.push(...oyun.masaKartlari); else if(sk==="oyuncu3")o3a.push(...oyun.masaKartlari); else o4a.push(...oyun.masaKartlari); }
+                t1 = (oyun.oyuncular.oyuncu1.puan + oyun.oyuncular.oyuncu3.puan) + getPuan(o1a) + getPuan(o3a);
+                t2 = (oyun.oyuncular.oyuncu2.puan + oyun.oyuncular.oyuncu4.puan) + getPuan(o2a) + getPuan(o4a);
+                t1k = o1a.length + o3a.length; t2k = o2a.length + o4a.length;
+            } else {
+                let o1a = [...(oyun.oyuncular.oyuncu1.alinan || [])], o2a = [...(oyun.oyuncular.oyuncu2.alinan || [])];
+                if(oyun.masaKartlari) { if(oyun.sonKazan === "oyuncu1") o1a.push(...oyun.masaKartlari); else o2a.push(...oyun.masaKartlari); }
+                t1 = (oyun.oyuncular.oyuncu1.puan || 0) + getPuan(o1a); t2 = (oyun.oyuncular.oyuncu2.puan || 0) + getPuan(o2a);
+                t1k = o1a.length; t2k = o2a.length;
+            }
+            if(t1k > t2k) t1 += 3; else if(t2k > t1k) t2 += 3;
+            const s1 = (oyun.oyuncular.oyuncu1.toplamSkor || 0) + t1, s2 = (oyun.oyuncular.oyuncu2.toplamSkor || 0) + t2;
+            const bitti = s1 >= oyun.hedef || s2 >= oyun.hedef;
+            const up = { skorGecmisi: [...(oyun.skorGecmisi || []), { oyuncu1: t1, oyuncu2: t2 }], durum: bitti ? "bitti" : "basladi" };
+            for(let i=1; i<=(mod==="4"?4:2); i++) { up[`oyuncular/oyuncu${i}/toplamSkor`] = (i % 2 !== 0) ? s1 : s2; up[`oyuncular/oyuncu${i}/puan`] = 0; up[`oyuncular/oyuncu${i}/alinan`] = []; }
+            if(bitti) {
+                if(mod !== "bot") {
+                    updateStats(oyun.oyuncular.oyuncu1.uid, t1, s1 > s2); updateStats(oyun.oyuncular.oyuncu2.uid, t2, s2 > s1);
+                    if(mod === "4") { updateStats(oyun.oyuncular.oyuncu3.uid, t1, s1 > s2); updateStats(oyun.oyuncular.oyuncu4.uid, t2, s2 > s1); }
+                }
+            } else {
+                const d = desteYap(); up.masaKartlari = d.splice(0,4); up.deste = d;
+                for(let i=1; i<=(mod==="4"?4:2); i++) up[`oyuncular/oyuncu${i}/el`] = d.splice(0,4);
+            }
+            await update(ref(db, `lobiler/${id}`), up);
+        }
+
+        function kartHtml(k, i, t) {
+            return `<div class="kart ${k.color}" ${t ? `onclick="kartAt(${i})"` : ""}>
+                <div>${k.value}</div><div style="font-size:35px; text-align:center">${k.suit}</div><div style="transform:rotate(180deg)">${k.value}</div>
+            </div>`;
+        }
+
+        function desteYap() {
+            const s = ["♥","♦","♣","♠"], v = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+            let d = []; s.forEach(x => v.forEach(y => d.push({suit:x, value:y, color:(x==="♥"||x==="♦")?"kirmizi":"siyah"})));
+            return d.sort(() => Math.random() - 0.5);
+        }
+
+        async function updateStats(uid, puan, kazandiMi, cezaMi = false) {
+            if(!uid || uid === "BOT") return;
+            const r = ref(db, `users/${uid}`); const s = await get(r); const d = s.val(); if(!d) return;
+            let f = d.sonBes || []; f.push(kazandiMi ? 'G' : 'M'); if(f.length > 5) f.shift();
+            let yeniPuan = (d.genelPuan || 0) + (cezaMi ? -100 : puan);
+            await update(r, { genelPuan: yeniPuan, oyunSayisi: (d.oyunSayisi || 0) + 1, galibiyet: (d.galibiyet || 0) + (kazandiMi ? 1 : 0), sonBes: f });
+        }
+
+        window.liderlikTablosuGoster = async () => {
+            const s = await get(ref(db, 'users/')); const data = s.val();
+            let arr = data ? Object.values(data).sort((a,b) => (b.genelPuan || 0) - (a.genelPuan || 0)) : [];
+            let html = `<h3>🏆 Liderlik Tablosu</h3><table><thead><tr><th>Oyuncu</th><th>Puan</th><th>O/G</th><th>Form</th></tr></thead><tbody>`;
+            arr.forEach(u => {
+                let fHtml = ''; (u.sonBes || []).forEach(x => fHtml += `<span class="son-bes-item ${x==='G'?'win':'lose'}">${x}</span>`);
+                html += `<tr><td>${u.adSoyad}</td><td>${u.genelPuan||0}</td><td>${u.oyunSayisi||0}/${u.galibiyet||0}</td><td>${fHtml}</td></tr>`;
+            });
+            document.getElementById('liderlik-listesi').innerHTML = html + "</tbody></table>";
+        };
+
+        function skorTablosuGuncelle(data) {
+            const govde = document.getElementById('tablo-govde'); govde.innerHTML = "";
+            (data.skorGecmisi || []).forEach((s, i) => { govde.innerHTML += `<tr><td>${i+1}</td><td>${s.oyuncu1}</td><td>${s.oyuncu2}</td></tr>`; });
+            govde.innerHTML += `<tr style="color:var(--gold); font-weight:bold;"><td>TOPLAM</td><td>${data.oyuncular.oyuncu1.toplamSkor}</td><td>${data.oyuncular.oyuncu2.toplamSkor}</td></tr>`;
+        }
+
+        function pistiEfektiGoster(msg) {
+            const el = document.getElementById('pisti-efekt');
+            el.textContent = msg; el.classList.add('pisti-anim');
+            setTimeout(() => el.classList.remove('pisti-anim'), 1500);
+        }
+
+        async function botHamlesi() {
+            const snap = await get(ref(db, `lobiler/${aktifMasaId}`)); const oyun = snap.val();
+            if(!oyun || oyun.sira !== "oyuncu2" || oyun.durum !== "basladi") return;
+            const botEli = oyun.oyuncular.oyuncu2.el || [];
+            if(botEli.length === 0) return;
+            let idx = 0; const yerdeki = (oyun.masaKartlari && oyun.masaKartlari.length > 0) ? oyun.masaKartlari[oyun.masaKartlari.length - 1] : null;
+            botEli.forEach((k, i) => { if(yerdeki && k.value === yerdeki.value) idx = i; });
+            const hamle = calculateMove(oyun, "oyuncu2", idx);
+            await update(ref(db, `lobiler/${aktifMasaId}`), hamle.updates);
+            if(hamle.updates.durum === "hesapla") finalHesapla(aktifMasaId);
+        }
+
+        window.oyundanAyril = async () => {
+            if(confirm("Masadan ayrılmak üzeresiniz. Devam eden oyundan çıkarsanız 100 puan ceza alırsınız?")) {
+                const snap = await get(ref(db, `lobiler/${aktifMasaId}`));
+                const oyun = snap.val();
+                if(oyun && oyun.durum === "basladi" && oyun.mod !== "bot") {
+                    await updateStats(aktifUser.uid, 0, false, true);
+                    alert("Oyundan kaçtığınız için 100 puan silindi!");
+                }
+                location.reload();
+            }
+        };
+    </script>
+</body>
+</html>
