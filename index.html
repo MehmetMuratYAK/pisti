@@ -2,19 +2,26 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Pişti Pro - Final Versiyon</title>
+    <title>Pişti Pro - El Bilgisi Modu</title>
     <style>
         :root { --bg: #0d2a1a; --gold: #f1c40f; --card-w: 85px; --card-h: 125px; }
         body { background: radial-gradient(circle, #1a472a 0%, var(--bg) 100%); color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
         
+        /* Animasyonlar */
         @keyframes pistiPop {
             0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
             50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; filter: drop-shadow(0 0 30px gold); }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
         }
-        #pisti-efekt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80px; font-weight: bold; color: var(--gold); text-shadow: 0 0 20px black; pointer-events: none; z-index: 1000; display: none; }
+        @keyframes fadeSlide {
+            0% { opacity: 0; transform: translateY(-20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #pisti-efekt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: bold; color: var(--gold); text-shadow: 0 0 20px black; pointer-events: none; z-index: 1000; display: none; text-align: center; }
         .pisti-anim { display: block !important; animation: pistiPop 1.5s ease-out forwards; }
         
+        /* Panel ve Butonlar */
         .panel { background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; margin-top: 30px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 420px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
         #oyun-alani { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 10px; position: relative; }
         
@@ -23,23 +30,25 @@
         .cikis-yap-btn { background: #e74c3c; color: white; width: auto; padding: 5px 12px; font-size: 12px; position: absolute; top: 10px; right: 10px; border-radius: 5px; }
         .ayril-btn { background: #c0392b !important; color: white !important; width: auto !important; padding: 8px 20px !important; position: absolute; top: 10px; right: 20px; z-index: 10; }
 
+        /* Oyun Elementleri */
+        .el-sayaci { background: rgba(241, 196, 15, 0.2); border: 1px solid var(--gold); padding: 5px 20px; border-radius: 30px; font-size: 20px; font-weight: bold; color: var(--gold); margin-bottom: 10px; animation: fadeSlide 0.5s ease-out; }
         .masa { width: 90%; height: 260px; border: 3px solid rgba(241, 196, 15, 0.4); border-radius: 125px; background: rgba(0,0,0,0.2); margin: 15px 0; position: relative; overflow: hidden; }
         .el { display: flex; gap: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; min-height: 140px; }
-        .kart { width: var(--card-w); height: var(--card-h); background: white; color: black; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 5px 10px rgba(0,0,0,0.4); border: 1px solid #ccc; position: absolute; transition: 0.3s ease; }
+        
+        /* Kartlar */
+        .kart { width: var(--card-w); height: var(--card-h); background: white; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 5px 10px rgba(0,0,0,0.4); border: 1px solid #ccc; position: absolute; transition: 0.3s ease; }
+        .kirmizi { color: #e74c3c; }
+        .siyah { color: #2c3e50; }
         .el .kart { position: relative; cursor: pointer; }
         .oyuncu-etiket { font-size: 18px; font-weight: bold; color: var(--gold); margin: 5px 0; }
 
-        .form-link { font-size: 14px; cursor: pointer; color: #bbb; margin-top: 15px; }
-        .form-link span { color: var(--gold); font-weight: bold; text-decoration: underline; }
-
-        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; margin-top: 10px; color: white; }
+        /* Bilgi Alanları */
+        #deste-bilgi { background: rgba(255, 255, 255, 0.1); padding: 5px 15px; border-radius: 20px; font-size: 14px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; margin-top: 10px; color: white; background: rgba(0,0,0,0.3); }
         th, td { padding: 8px; border: 1px solid rgba(241, 196, 15, 0.2); }
         th { background: var(--gold); color: black; }
-        input, select { padding: 12px; border-radius: 8px; border: none; margin: 8px 0; font-size: 15px; }
-
-        .son-bes-item { width: 18px; height: 18px; border-radius: 3px; font-size: 11px; display: inline-flex; align-items: center; justify-content: center; color: white; font-weight: bold; margin: 0 1px; }
-        .win { background: #2ecc71; }
-        .lose { background: #e74c3c; }
+        .detay-text { font-size: 11px; color: #ddd; display: block; margin-top: 4px; line-height: 1.4; }
+        .badge-detay { background: rgba(255,255,255,0.15); padding: 1px 4px; border-radius: 4px; margin: 0 2px; }
     </style>
 </head>
 <body>
@@ -58,7 +67,7 @@
         <div style="margin-top: 10px;">
             <button id="ana-islem-btn" onclick="girisYap()" style="background:#3498db; color:white;">Giriş Yap</button>
             <p id="form-degistir-text" class="form-link">
-                Hesabınız yok mu? <span onclick="toggleForm('kayit')">Kayıt Ol</span>
+                Hesabınız yok mu? <span onclick="toggleForm('kayit')" style="color:var(--gold); cursor:pointer; text-decoration:underline;">Kayıt Ol</span>
             </p>
         </div>
     </div>
@@ -83,12 +92,19 @@
 
     <div id="oyun-alani">
         <button class="ayril-btn" onclick="oyundanAyril()">Masadan Ayrıl</button>
+        
+        <div id="aktif-el-display" class="el-sayaci">1. El</div>
+        
         <div id="rakip-ismi" class="oyuncu-etiket">Oyuncular Bekleniyor...</div>
+        <div id="deste-bilgi">Destede Kalan: 52</div>
         <div id="durum" style="font-weight: bold; color: var(--gold); margin-bottom: 5px;">Bağlanılıyor...</div>
+        
         <div class="masa" id="yerdeki-kartlar"></div>
+        
         <div id="benim-ismim" class="oyuncu-etiket">Siz</div>
         <div class="el" id="benim-elim"></div>
-        <div id="skor-tablosu-konteynir" style="width: 90%; max-width: 600px;">
+        
+        <div id="skor-tablosu-konteynir" style="width: 90%; max-width: 600px; margin-top: 20px;">
             <table>
                 <thead>
                     <tr>
@@ -124,29 +140,25 @@
 
         let aktifUser = null, aktifMasaId = null, benimRolum = null, benimIsmim = "";
 
+        // AUTH VE FORM İŞLEMLERİ
         window.toggleForm = (mod) => {
             const kayitAlani = document.getElementById('kayit-ozel-alan');
             const baslik = document.getElementById('form-baslik');
             const btn = document.getElementById('ana-islem-btn');
             const text = document.getElementById('form-degistir-text');
             if(mod === 'kayit') {
-                kayitAlani.style.display = 'block';
-                baslik.textContent = 'Kayıt Ol';
-                btn.textContent = 'Kayıt Ol';
+                kayitAlani.style.display = 'block'; baslik.textContent = 'Kayıt Ol'; btn.textContent = 'Kayıt Ol';
                 btn.onclick = () => window.kayitOl();
-                text.innerHTML = `Zaten hesabınız var mı? <span onclick="toggleForm('giris')">Giriş Yap</span>`;
+                text.innerHTML = `Zaten hesabınız var mı? <span onclick="toggleForm('giris')" style="color:var(--gold); cursor:pointer;">Giriş Yap</span>`;
             } else {
-                kayitAlani.style.display = 'none';
-                baslik.textContent = 'Giriş Yap';
-                btn.textContent = 'Giriş Yap';
+                kayitAlani.style.display = 'none'; baslik.textContent = 'Giriş Yap'; btn.textContent = 'Giriş Yap';
                 btn.onclick = () => window.girisYap();
-                text.innerHTML = `Hesabınız yok mu? <span onclick="toggleForm('kayit')">Kayıt Ol</span>`;
+                text.innerHTML = `Hesabınız yok mu? <span onclick="toggleForm('kayit')" style="color:var(--gold); cursor:pointer;">Kayıt Ol</span>`;
             }
         };
 
         window.kayitOl = () => {
-            const ad = document.getElementById('adSoyad').value;
-            const m = document.getElementById('email').value, s = document.getElementById('sifre').value;
+            const ad = document.getElementById('adSoyad').value, m = document.getElementById('email').value, s = document.getElementById('sifre').value;
             if(!ad) return alert("Lütfen adınızı girin.");
             createUserWithEmailAndPassword(auth, m, s).then(res => {
                 set(ref(db, 'users/' + res.user.uid), { adSoyad: ad, email: m, genelPuan: 0, oyunSayisi: 0, galibiyet: 0, sonBes: [] });
@@ -162,34 +174,26 @@
 
         onAuthStateChanged(auth, user => { 
             if(user) { 
-                aktifUser = user; 
-                document.getElementById('giris-ekrani').style.display='none'; 
-                document.getElementById('lobi-ekrani').style.display='block';
+                aktifUser = user; document.getElementById('giris-ekrani').style.display='none'; document.getElementById('lobi-ekrani').style.display='block';
                 onValue(ref(db, `users/${user.uid}`), s => {
-                    const d = s.val();
-                    if(d) {
-                        benimIsmim = d.adSoyad;
-                        document.getElementById('profil-bilgi').innerHTML = `<b>${d.adSoyad}</b><br>Genel Puan: ${d.genelPuan || 0}`;
-                    }
+                    const d = s.val(); if(d) { benimIsmim = d.adSoyad; document.getElementById('profil-bilgi').innerHTML = `<b>${d.adSoyad}</b><br>Genel Puan: ${d.genelPuan || 0}`; }
                 });
                 lobiTakip(); 
             } else {
-                document.getElementById('giris-ekrani').style.display='block';
-                document.getElementById('lobi-ekrani').style.display='none';
+                document.getElementById('giris-ekrani').style.display='block'; document.getElementById('lobi-ekrani').style.display='none';
             }
         });
 
+        // OYUN VE MASA YÖNETİMİ
         function lobiTakip() {
             onValue(ref(db, 'lobiler/'), snap => {
                 const list = document.getElementById('masa-listesi'); list.innerHTML = "";
-                const data = snap.val();
-                if(!data) { list.innerHTML = "Aktif masa yok."; return; }
+                const data = snap.val(); if(!data) { list.innerHTML = "Aktif masa yok."; return; }
                 for(let id in data) {
                     if(data[id].durum === "bekliyor") {
                         const count = Object.keys(data[id].oyuncular).length;
                         const modStr = data[id].mod === "4" ? "Eşli" : "2 Kişilik";
-                        const div = document.createElement('div');
-                        div.style.margin = "10px 0";
+                        const div = document.createElement('div'); div.style.margin = "10px 0";
                         const isOwner = data[id].oyuncular.oyuncu1.uid === aktifUser.uid;
                         div.innerHTML = `<span>[${modStr}] ${data[id].oyuncular.oyuncu1.isim} Masası (${count}/${data[id].mod === "4" ? 4 : 2})</span> ` + 
                             (isOwner ? `<button onclick="masaSil('${id}')" style="width: auto; padding: 5px 15px; background: #e74c3c;">Masayı Sil</button>` : `<button onclick="masaKatil('${id}')" style="width: auto; padding: 5px 15px;">Katıl</button>`);
@@ -199,32 +203,26 @@
             });
         }
 
-        window.masaSil = async (id) => {
-            if(confirm("Masayı silmek istediğinize emin misiniz?")) {
-                await remove(ref(db, 'lobiler/' + id));
-            }
-        };
+        window.masaSil = async (id) => { if(confirm("Masayı silmek istediğinize emin misiniz?")) await remove(ref(db, 'lobiler/' + id)); };
 
         window.masaKur = async () => {
             const mod = document.getElementById('mod-secim').value, bitis = document.getElementById('bitis-puani').value, id = "masa_" + Date.now();
             const yeniMasa = { 
                 mod: mod, hedef: parseInt(bitis), durum: mod === "bot" ? "basladi" : "bekliyor", 
                 sira: "oyuncu1", sonKazan: "oyuncu1", masaKartlari: [], skorGecmisi: [], 
-                oyuncular: { oyuncu1: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0 } } 
+                oyuncular: { oyuncu1: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 } } 
             };
             if(mod === "bot") { 
-                yeniMasa.oyuncular.oyuncu2 = { uid: "BOT", isim: "Bilgisayar", puan: 0, alinan: [], toplamSkor: 0 }; 
+                yeniMasa.oyuncular.oyuncu2 = { uid: "BOT", isim: "Bilgisayar", puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 }; 
                 const d = desteYap(); yeniMasa.masaKartlari = d.splice(0,4); yeniMasa.oyuncular.oyuncu1.el = d.splice(0,4); yeniMasa.oyuncular.oyuncu2.el = d.splice(0,4); yeniMasa.deste = d; 
             }
             await set(ref(db, 'lobiler/' + id), yeniMasa); masaGiris(id, "oyuncu1");
         };
 
         window.masaKatil = async (id) => {
-            const snap = await get(ref(db, `lobiler/${id}`));
-            const oyun = snap.val();
-            const idx = Object.keys(oyun.oyuncular).length + 1;
-            const rol = "oyuncu" + idx;
-            let up = { [`oyuncular/${rol}`]: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0 } };
+            const snap = await get(ref(db, `lobiler/${id}`)); const oyun = snap.val();
+            const idx = Object.keys(oyun.oyuncular).length + 1; const rol = "oyuncu" + idx;
+            let up = { [`oyuncular/${rol}`]: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 } };
             const max = oyun.mod === "4" ? 4 : 2;
             if(idx === max) {
                 const d = desteYap(); up.durum = "basladi"; up.masaKartlari = d.splice(0,4); up.deste = d;
@@ -237,28 +235,37 @@
             aktifMasaId = id; benimRolum = rol;
             document.getElementById('lobi-ekrani').style.display = 'none'; document.getElementById('oyun-alani').style.display = 'flex';
             onValue(ref(db, `lobiler/${id}`), snap => { 
-                const data = snap.val(); 
-                if(data) { oyunGuncelle(data); if(data.durum === "basladi" && data.mod === "bot" && data.sira === "oyuncu2") setTimeout(botHamlesi, 1000); } 
+                const data = snap.val(); if(data) { oyunGuncelle(data); if(data.durum === "basladi" && data.mod === "bot" && data.sira === "oyuncu2") setTimeout(botHamlesi, 1000); } 
             });
         }
 
+        // OYUN AKIŞI
         function oyunGuncelle(data) {
             const yer = document.getElementById('yerdeki-kartlar'), elDiv = document.getElementById('benim-elim');
+            const elSayaci = document.getElementById('aktif-el-display');
+            
+            // El Numarası Güncelleme
+            const guncelEl = (data.skorGecmisi ? data.skorGecmisi.length : 0) + 1;
+            elSayaci.textContent = `${guncelEl}. El`;
+
+            document.getElementById('deste-bilgi').textContent = `Destede Kalan: ${data.deste ? data.deste.length : 0} kart`;
+
             if(data.mod === "4") {
-                document.getElementById('th-oyuncu1').textContent = `1. Takım (${data.oyuncular.oyuncu1.isim} + ${data.oyuncular.oyuncu3?.isim || "?"})`;
-                document.getElementById('th-oyuncu2').textContent = `2. Takım (${data.oyuncular.oyuncu2?.isim || "?"} + ${data.oyuncular.oyuncu4?.isim || "?"})`;
+                document.getElementById('th-oyuncu1').textContent = `1. Takım`;
+                document.getElementById('th-oyuncu2').textContent = `2. Takım`;
             } else {
                 document.getElementById('th-oyuncu1').textContent = data.oyuncular.oyuncu1.isim;
                 document.getElementById('th-oyuncu2').textContent = data.oyuncular.oyuncu2 ? data.oyuncular.oyuncu2.isim : "Bekleniyor...";
             }
+
             if(data.durum === "bitti") {
-                yer.style.display = "none"; elDiv.style.display = "none";
+                yer.innerHTML = ""; elDiv.innerHTML = "";
                 document.getElementById('durum').innerHTML = "🏆 OYUN BİTTİ 🏆";
                 document.getElementById('lobiye-don').style.display = "block";
                 skorTablosuGuncelle(data); return;
             }
+
             document.getElementById('durum').textContent = data.sira === benimRolum ? "SIRA SİZDE" : "RAKİPTE...";
-            document.getElementById('benim-ismim').textContent = benimIsmim + " (Siz)";
             yer.innerHTML = "";
             const mk = data.masaKartlari || [];
             let gap = Math.max(10, Math.min(25, 350 / (mk.length + 1)));
@@ -269,6 +276,7 @@
                 if(i === mk.length - 1) kd.style.border = "2px solid var(--gold)";
                 yer.appendChild(kd);
             });
+
             elDiv.innerHTML = "";
             (data.oyuncular[benimRolum]?.el || []).forEach((k, i) => {
                 const div = document.createElement('div'); div.innerHTML = kartHtml(k, i, true);
@@ -288,25 +296,30 @@
         function calculateMove(oyun, suankiSira, idx) {
             let el = [...oyun.oyuncular[suankiSira].el]; let atilan = el.splice(idx, 1)[0];
             let masa = oyun.masaKartlari || []; let pPuan = oyun.oyuncular[suankiSira].puan || 0;
+            let pSayisi = oyun.oyuncular[suankiSira].pistiSayisi || 0;
             let alinan = oyun.oyuncular[suankiSira].alinan || []; let sonKazan = oyun.sonKazan;
             let max = oyun.mod === "4" ? 4 : 2;
-            let currentNum = parseInt(suankiSira.replace("oyuncu", ""));
-            let siradaki = "oyuncu" + ((currentNum % max) + 1);
+            let siradaki = "oyuncu" + ((parseInt(suankiSira.replace("oyuncu", "")) % max) + 1);
+
             if(masa.length > 0) {
                 let ust = masa[masa.length - 1];
                 if(atilan.value === "J" || atilan.value === ust.value) {
                     sonKazan = suankiSira;
-                    if(masa.length === 1 && atilan.value === ust.value) { 
-                        pistiEfektiGoster(atilan.value === "J" ? "VALE PİŞTİ!" : "PİŞTİ!");
-                        pPuan += (atilan.value === "J") ? 25 : 10;
+                    let mText = atilan.value === "J" ? "VALE İLE ALDI!" : `${atilan.value} EŞLEMESİ!`;
+                    if(masa.length === 1 && atilan.value === {value: ust.value}.value) { 
+                        mText = atilan.value === "J" ? "VALE PİŞTİ!" : "PİŞTİ!";
+                        pPuan += (atilan.value === "J") ? 25 : 10; pSayisi += 1;
                     }
-                    alinan = [...alinan, ...masa, atilan]; masa = [];
+                    pistiEfektiGoster(mText); alinan = [...alinan, ...masa, atilan]; masa = [];
                 } else masa.push(atilan);
             } else masa.push(atilan);
+
             let updates = { masaKartlari: masa, sira: siradaki, sonKazan: sonKazan };
-            updates[`oyuncular/${suankiSira}/el`] = el; updates[`oyuncular/${suankiSira}/puan`] = pPuan; updates[`oyuncular/${suankiSira}/alinan`] = alinan;
+            updates[`oyuncular/${suankiSira}/el`] = el; updates[`oyuncular/${suankiSira}/puan`] = pPuan; 
+            updates[`oyuncular/${suankiSira}/pistiSayisi`] = pSayisi; updates[`oyuncular/${suankiSira}/alinan`] = alinan;
+            
             let bittiMi = true;
-            for(let i=1; i<=max; i++) { if((i === currentNum ? el : (oyun.oyuncular["oyuncu"+i].el || [])).length > 0) bittiMi = false; }
+            for(let i=1; i<=max; i++) { if((i === parseInt(suankiSira.replace("oyuncu","")) ? el : (oyun.oyuncular["oyuncu"+i].el || [])).length > 0) bittiMi = false; }
             if(bittiMi) {
                 if(oyun.deste && oyun.deste.length > 0) {
                     let d = [...oyun.deste]; for(let i=1; i<=max; i++) updates[`oyuncular/oyuncu${i}/el`] = d.splice(0, 4);
@@ -319,45 +332,67 @@
         async function finalHesapla(id) {
             const snap = await get(ref(db, `lobiler/${id}`)); const oyun = snap.val();
             const mod = oyun.mod;
-            const getPuan = (cards) => {
-                let res = 0;
+
+            const getDetayliPuan = (cards) => {
+                let p = 0; let d = [];
                 (cards || []).forEach(k => {
-                    if(k.value === "A" || k.value === "J") res += 1;
-                    if(k.suit === "♣" && k.value === "2") res += 2;
-                    if(k.suit === "♦" && k.value === "10") res += 3;
+                    if(k.value === "A") { p += 1; d.push("A"); }
+                    if(k.value === "J") { p += 1; d.push("J"); }
+                    if(k.suit === "♣" && k.value === "2") { p += 2; d.push("♣2"); }
+                    if(k.suit === "♦" && k.value === "10") { p += 3; d.push("♦10"); }
                 });
-                return res;
+                let counts = {}; d.forEach(x => counts[x] = (counts[x] || 0) + 1);
+                let finalD = Object.entries(counts).map(([k, v]) => v > 1 ? `${v}x${k}` : k).join(", ");
+                return { p, detay: finalD };
             };
-            let t1 = 0, t2 = 0, t1k = 0, t2k = 0;
-            if(mod === "4") {
-                let o1a = [...(oyun.oyuncular.oyuncu1.alinan || [])], o2a = [...(oyun.oyuncular.oyuncu2.alinan || [])], o3a = [...(oyun.oyuncular.oyuncu3.alinan || [])], o4a = [...(oyun.oyuncular.oyuncu4.alinan || [])];
-                if(oyun.masaKartlari) { const sk = oyun.sonKazan; if(sk==="oyuncu1")o1a.push(...oyun.masaKartlari); else if(sk==="oyuncu2")o2a.push(...oyun.masaKartlari); else if(sk==="oyuncu3")o3a.push(...oyun.masaKartlari); else o4a.push(...oyun.masaKartlari); }
-                t1 = (oyun.oyuncular.oyuncu1.puan + oyun.oyuncular.oyuncu3.puan) + getPuan(o1a) + getPuan(o3a);
-                t2 = (oyun.oyuncular.oyuncu2.puan + oyun.oyuncular.oyuncu4.puan) + getPuan(o2a) + getPuan(o4a);
-                t1k = o1a.length + o3a.length; t2k = o2a.length + o4a.length;
-            } else {
-                let o1a = [...(oyun.oyuncular.oyuncu1.alinan || [])], o2a = [...(oyun.oyuncular.oyuncu2.alinan || [])];
-                if(oyun.masaKartlari) { if(oyun.sonKazan === "oyuncu1") o1a.push(...oyun.masaKartlari); else o2a.push(...oyun.masaKartlari); }
-                t1 = (oyun.oyuncular.oyuncu1.puan || 0) + getPuan(o1a); t2 = (oyun.oyuncular.oyuncu2.puan || 0) + getPuan(o2a);
-                t1k = o1a.length; t2k = o2a.length;
+
+            let players = [];
+            for(let i=1; i<=(mod==="4"?4:2); i++) {
+                let pData = oyun.oyuncular["oyuncu"+i];
+                let alinan = [...(pData.alinan || [])];
+                if(oyun.sonKazan === "oyuncu"+i) alinan.push(...(oyun.masaKartlari || []));
+                let pInfo = getDetayliPuan(alinan);
+                players.push({ id: "oyuncu"+i, puan: pData.puan + pInfo.p, count: alinan.length, detay: pInfo.detay, pisti: pData.pistiSayisi });
             }
-            if(t1k > t2k) t1 += 3; else if(t2k > t1k) t2 += 3;
+
+            let t1, t2, det1, det2, t1k, t2k;
+            if(mod === "4") {
+                t1 = players[0].puan + players[2].puan; t2 = players[1].puan + players[3].puan;
+                t1k = players[0].count + players[2].count; t2k = players[1].count + players[3].count;
+                let pisti1 = players[0].pisti + players[2].pisti, pisti2 = players[1].pisti + players[3].pisti;
+                det1 = (pisti1 > 0 ? `<span class="badge-detay">${pisti1} Pişti</span> ` : "") + [players[0].detay, players[2].detay].filter(Boolean).join(", ");
+                det2 = (pisti2 > 0 ? `<span class="badge-detay">${pisti2} Pişti</span> ` : "") + [players[1].detay, players[3].detay].filter(Boolean).join(", ");
+            } else {
+                t1 = players[0].puan; t2 = players[1].puan; t1k = players[0].count; t2k = players[1].count;
+                det1 = (players[0].pisti > 0 ? `<span class="badge-detay">${players[0].pisti} Pişti</span> ` : "") + players[0].detay;
+                det2 = (players[1].pisti > 0 ? `<span class="badge-detay">${players[1].pisti} Pişti</span> ` : "") + players[1].detay;
+            }
+
+            if(t1k > t2k) { t1 += 3; det1 += (det1 ? ", " : "") + "Kart Fazlası"; }
+            else if(t2k > t1k) { t2 += 3; det2 += (det2 ? ", " : "") + "Kart Fazlası"; }
+
             const s1 = (oyun.oyuncular.oyuncu1.toplamSkor || 0) + t1, s2 = (oyun.oyuncular.oyuncu2.toplamSkor || 0) + t2;
             const bitti = s1 >= oyun.hedef || s2 >= oyun.hedef;
-            const up = { skorGecmisi: [...(oyun.skorGecmisi || []), { oyuncu1: t1, oyuncu2: t2 }], durum: bitti ? "bitti" : "basladi" };
-            for(let i=1; i<=(mod==="4"?4:2); i++) { up[`oyuncular/oyuncu${i}/toplamSkor`] = (i % 2 !== 0) ? s1 : s2; up[`oyuncular/oyuncu${i}/puan`] = 0; up[`oyuncular/oyuncu${i}/alinan`] = []; }
-            if(bitti) {
-                if(mod !== "bot") {
-                    updateStats(oyun.oyuncular.oyuncu1.uid, t1, s1 > s2); updateStats(oyun.oyuncular.oyuncu2.uid, t2, s2 > s1);
-                    if(mod === "4") { updateStats(oyun.oyuncular.oyuncu3.uid, t1, s1 > s2); updateStats(oyun.oyuncular.oyuncu4.uid, t2, s2 > s1); }
-                }
-            } else {
+
+            const up = { 
+                skorGecmisi: [...(oyun.skorGecmisi || []), { oyuncu1: t1, oyuncu2: t2, d1: det1, d2: det2 }], 
+                durum: bitti ? "bitti" : "basladi" 
+            };
+
+            for(let i=1; i<=(mod==="4"?4:2); i++) { 
+                up[`oyuncular/oyuncu${i}/toplamSkor`] = (i % 2 !== 0) ? s1 : s2; 
+                up[`oyuncular/oyuncu${i}/puan`] = 0; up[`oyuncular/oyuncu${i}/alinan`] = []; up[`oyuncular/oyuncu${i}/pistiSayisi`] = 0;
+            }
+
+            if(!bitti) {
                 const d = desteYap(); up.masaKartlari = d.splice(0,4); up.deste = d;
                 for(let i=1; i<=(mod==="4"?4:2); i++) up[`oyuncular/oyuncu${i}/el`] = d.splice(0,4);
+                pistiEfektiGoster(`${(oyun.skorGecmisi ? oyun.skorGecmisi.length : 0) + 2}. El Başlıyor!`);
             }
             await update(ref(db, `lobiler/${id}`), up);
         }
 
+        // YARDIMCI ARAÇLAR
         function kartHtml(k, i, t) {
             return `<div class="kart ${k.color}" ${t ? `onclick="kartAt(${i})"` : ""}>
                 <div>${k.value}</div><div style="font-size:35px; text-align:center">${k.suit}</div><div style="transform:rotate(180deg)">${k.value}</div>
@@ -370,12 +405,30 @@
             return d.sort(() => Math.random() - 0.5);
         }
 
-        async function updateStats(uid, puan, kazandiMi, cezaMi = false) {
-            if(!uid || uid === "BOT") return;
-            const r = ref(db, `users/${uid}`); const s = await get(r); const d = s.val(); if(!d) return;
-            let f = d.sonBes || []; f.push(kazandiMi ? 'G' : 'M'); if(f.length > 5) f.shift();
-            let yeniPuan = (d.genelPuan || 0) + (cezaMi ? -100 : puan);
-            await update(r, { genelPuan: yeniPuan, oyunSayisi: (d.oyunSayisi || 0) + 1, galibiyet: (d.galibiyet || 0) + (kazandiMi ? 1 : 0), sonBes: f });
+        function skorTablosuGuncelle(data) {
+            const govde = document.getElementById('tablo-govde'); govde.innerHTML = "";
+            (data.skorGecmisi || []).forEach((s, i) => { 
+                govde.innerHTML += `<tr><td>${i+1}. El</td><td>${s.oyuncu1} <span class="detay-text">${s.d1 || ""}</span></td><td>${s.oyuncu2} <span class="detay-text">${s.d2 || ""}</span></td></tr>`; 
+            });
+            govde.innerHTML += `<tr style="color:var(--gold); font-weight:bold; background:rgba(255,255,255,0.1)"><td>TOPLAM</td><td>${data.oyuncular.oyuncu1.toplamSkor}</td><td>${data.oyuncular.oyuncu2.toplamSkor}</td></tr>`;
+        }
+
+        function pistiEfektiGoster(msg) {
+            const el = document.getElementById('pisti-efekt');
+            el.textContent = msg; el.classList.remove('pisti-anim');
+            void el.offsetWidth; el.classList.add('pisti-anim');
+            setTimeout(() => el.classList.remove('pisti-anim'), 2000);
+        }
+
+        async function botHamlesi() {
+            const snap = await get(ref(db, `lobiler/${aktifMasaId}`)); const oyun = snap.val();
+            if(!oyun || oyun.sira !== "oyuncu2" || oyun.durum !== "basladi") return;
+            const botEli = oyun.oyuncular.oyuncu2.el || []; if(botEli.length === 0) return;
+            let idx = 0; const yerdeki = (oyun.masaKartlari && oyun.masaKartlari.length > 0) ? oyun.masaKartlari[oyun.masaKartlari.length - 1] : null;
+            botEli.forEach((k, i) => { if(yerdeki && (k.value === yerdeki.value || k.value === "J")) idx = i; });
+            const hamle = calculateMove(oyun, "oyuncu2", idx);
+            await update(ref(db, `lobiler/${aktifMasaId}`), hamle.updates);
+            if(hamle.updates.durum === "hesapla") finalHesapla(aktifMasaId);
         }
 
         window.liderlikTablosuGoster = async () => {
@@ -389,37 +442,12 @@
             document.getElementById('liderlik-listesi').innerHTML = html + "</tbody></table>";
         };
 
-        function skorTablosuGuncelle(data) {
-            const govde = document.getElementById('tablo-govde'); govde.innerHTML = "";
-            (data.skorGecmisi || []).forEach((s, i) => { govde.innerHTML += `<tr><td>${i+1}</td><td>${s.oyuncu1}</td><td>${s.oyuncu2}</td></tr>`; });
-            govde.innerHTML += `<tr style="color:var(--gold); font-weight:bold;"><td>TOPLAM</td><td>${data.oyuncular.oyuncu1.toplamSkor}</td><td>${data.oyuncular.oyuncu2.toplamSkor}</td></tr>`;
-        }
-
-        function pistiEfektiGoster(msg) {
-            const el = document.getElementById('pisti-efekt');
-            el.textContent = msg; el.classList.add('pisti-anim');
-            setTimeout(() => el.classList.remove('pisti-anim'), 1500);
-        }
-
-        async function botHamlesi() {
-            const snap = await get(ref(db, `lobiler/${aktifMasaId}`)); const oyun = snap.val();
-            if(!oyun || oyun.sira !== "oyuncu2" || oyun.durum !== "basladi") return;
-            const botEli = oyun.oyuncular.oyuncu2.el || [];
-            if(botEli.length === 0) return;
-            let idx = 0; const yerdeki = (oyun.masaKartlari && oyun.masaKartlari.length > 0) ? oyun.masaKartlari[oyun.masaKartlari.length - 1] : null;
-            botEli.forEach((k, i) => { if(yerdeki && k.value === yerdeki.value) idx = i; });
-            const hamle = calculateMove(oyun, "oyuncu2", idx);
-            await update(ref(db, `lobiler/${aktifMasaId}`), hamle.updates);
-            if(hamle.updates.durum === "hesapla") finalHesapla(aktifMasaId);
-        }
-
         window.oyundanAyril = async () => {
             if(confirm("Masadan ayrılmak üzeresiniz. Devam eden oyundan çıkarsanız 100 puan ceza alırsınız?")) {
-                const snap = await get(ref(db, `lobiler/${aktifMasaId}`));
-                const oyun = snap.val();
+                const snap = await get(ref(db, `lobiler/${aktifMasaId}`)); const oyun = snap.val();
                 if(oyun && oyun.durum === "basladi" && oyun.mod !== "bot") {
-                    await updateStats(aktifUser.uid, 0, false, true);
-                    alert("Oyundan kaçtığınız için 100 puan silindi!");
+                    const r = ref(db, `users/${aktifUser.uid}`); const s = await get(r); const d = s.val();
+                    if(d) await update(r, { genelPuan: (d.genelPuan || 0) - 100 });
                 }
                 location.reload();
             }
