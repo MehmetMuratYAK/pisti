@@ -3,53 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Pişti Pro - El Bilgisi Modu</title>
+    <title>Pişti Pro - Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0d2a1a; --gold: #f1c40f; --card-w: 85px; --card-h: 125px; }
-        body { background: radial-gradient(circle, #1a472a 0%, var(--bg) 100%); color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+        :root { --bg: #0f2027; --gold: #ffd700; --gold-dark: #d4af37; --card-w: 80px; --card-h: 115px; }
         
-        /* Animasyonlar */
+        body { 
+            background: linear-gradient(to bottom, #203a43, #2c5364); 
+            color: white; 
+            font-family: 'Poppins', sans-serif;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-x: hidden;
+        }
+
+        /* OYUN LOGOSU */
+        h1 {
+            font-size: 2.2rem;
+            margin: 15px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: -webkit-linear-gradient(var(--gold), var(--gold-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0px 4px 10px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        /* MODERNIZE EDİLMİŞ PANEL (CAM EFEKTİ) */
+        .panel { 
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 25px 20px; 
+            border-radius: 20px; 
+            text-align: center; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); 
+            width: 100%; 
+            max-width: 400px;
+            border: 1px solid rgba(255, 255, 255, 0.18); 
+            margin-top: 5px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* GİRİŞ INPUTLARI */
+        input, select {
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            font-size: 16px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 10px rgba(255, 215, 0, 0.3); }
+        ::placeholder { color: rgba(255,255,255,0.5); }
+
+        /* YAN YANA DURAN SEÇİM KUTULARI */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .input-group select { flex: 2; margin-bottom: 0; }
+        .input-group input { flex: 1; margin-bottom: 0; text-align: center; }
+
+        /* BUTONLAR */
+        button { 
+            padding: 15px; 
+            background: linear-gradient(45deg, var(--gold), #f39c12); 
+            border: none; 
+            border-radius: 12px; 
+            font-weight: 600; 
+            font-size: 16px; 
+            color: #1a1a1a;
+            cursor: pointer; 
+            margin: 8px 0; 
+            width: 100%; 
+            box-shadow: 0 4px 15px rgba(241, 196, 15, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Poppins', sans-serif;
+        }
+        button:active { transform: scale(0.98); }
+        button:hover { opacity: 0.9; }
+
+        /* ÖZEL BUTON RENKLERİ */
+        .btn-blue { background: linear-gradient(45deg, #3498db, #2980b9); color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.4); }
+        .btn-purple { background: linear-gradient(45deg, #9b59b6, #8e44ad); color: white; box-shadow: 0 4px 15px rgba(155, 89, 182, 0.4); }
+        .btn-red { background: linear-gradient(45deg, #e74c3c, #c0392b); color: white; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4); }
+
+        /* Çıkış Yap Butonu (Sağ üstte minik) */
+        .cikis-yap-btn { 
+            background: rgba(231, 76, 60, 0.2); 
+            color: #ff6b6b; 
+            border: 1px solid rgba(231, 76, 60, 0.5);
+            width: auto; 
+            padding: 6px 12px; 
+            font-size: 12px; 
+            position: absolute; 
+            top: 15px; 
+            right: 15px; 
+            margin: 0;
+            box-shadow: none;
+        }
+
+        /* OYUN ALANI */
+        #oyun-alani { display: none; width: 100%; flex-direction: column; align-items: center; position: relative; max-width: 500px; }
+        
+        .el-sayaci { 
+            background: rgba(241, 196, 15, 0.1); 
+            border: 1px solid var(--gold); 
+            padding: 5px 20px; 
+            border-radius: 30px; 
+            font-size: 14px; 
+            font-weight: bold; 
+            color: var(--gold); 
+            margin-bottom: 10px; 
+        }
+
+        .masa { 
+            width: 100%; 
+            height: 260px; 
+            border: 2px dashed rgba(255,255,255,0.2); 
+            border-radius: 20px; 
+            background: rgba(255,255,255,0.02); 
+            margin: 10px 0; 
+            position: relative; 
+        }
+        
+        .el { display: flex; gap: 8px; justify-content: center; min-height: 120px; margin-top: 10px; }
+        
+        .kart { 
+            width: var(--card-w); 
+            height: var(--card-h); 
+            background: white; 
+            border-radius: 8px; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            padding: 5px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            font-size: 18px;
+            font-weight: bold;
+            position: absolute;
+            transition: 0.3s ease;
+            box-sizing: border-box;
+        }
+        .el .kart { position: relative; cursor: pointer; }
+        .el .kart:hover { transform: translateY(-10px); }
+
+        .kirmizi { color: #e74c3c; } 
+        .siyah { color: #2c3e50; }
+        .oyuncu-etiket { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 2px; }
+
+        /* PROFİL KARTI */
+        #profil-bilgi {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 35px 0 20px 0;
+            border: 1px solid rgba(255,255,255,0.05);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* TABLOLAR VE LİSTELER */
+        table { width: 100%; border-collapse: separate; border-spacing: 0 5px; font-size: 13px; color: white; margin-top: 10px; }
+        th { color: var(--gold); padding: 8px; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        td { background: rgba(255,255,255,0.05); padding: 10px; text-align: center; }
+        tr:first-child td:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+        tr:first-child td:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+        
+        #masa-listesi div {
+            background: rgba(255,255,255,0.05);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+        }
+
+        /* EFECTLER */
         @keyframes pistiPop {
             0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
             50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; filter: drop-shadow(0 0 30px gold); }
             100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
         }
-        @keyframes fadeSlide {
-            0% { opacity: 0; transform: translateY(-20px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-
-        #pisti-efekt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; font-weight: bold; color: var(--gold); text-shadow: 0 0 20px black; pointer-events: none; z-index: 1000; display: none; text-align: center; }
+        #pisti-efekt { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 50px; font-weight: 900; color: var(--gold); text-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none; z-index: 1000; display: none; width: 100%; text-align: center; }
         .pisti-anim { display: block !important; animation: pistiPop 1.5s ease-out forwards; }
         
-        /* Panel ve Butonlar */
-        .panel { background: rgba(0,0,0,0.9); padding: 25px; border-radius: 15px; margin-top: 30px; text-align:center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 90px; max-width: 420px; border: 1px solid rgba(255,255,255,0.1); position: relative; }
-        #oyun-alani { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 10px; position: relative; }
-        
-        button { padding: 12px; background: var(--gold); border: none; border-radius: 8px; font-weight: bold; cursor: pointer; margin: 5px; width: 100%; transition: 0.3s; }
-        button:hover { opacity: 0.8; transform: scale(1.02); }
-        .cikis-yap-btn { background: #e74c3c; color: white; width: auto; padding: 5px 12px; font-size: 12px; position: absolute; top: 10px; right: 10px; border-radius: 5px; }
-        .ayril-btn { background: #c0392b !important; color: white !important; width: auto !important; padding: 8px 20px !important; position: absolute; top: 10px; right: 20px; z-index: 10; }
-
-        /* Oyun Elementleri */
-        .el-sayaci { background: rgba(241, 196, 15, 0.2); border: 1px solid var(--gold); padding: 5px 20px; border-radius: 30px; font-size: 20px; font-weight: bold; color: var(--gold); margin-bottom: 10px; animation: fadeSlide 0.5s ease-out; }
-        .masa { width: 90%; height: 260px; border: 3px solid rgba(241, 196, 15, 0.4); border-radius: 125px; background: rgba(0,0,0,0.2); margin: 15px 0; position: relative; overflow: hidden; }
-        .el { display: flex; gap: 10px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 12px; min-height: 140px; }
-        
-        /* Kartlar */
-        .kart { width: var(--card-w); height: var(--card-h); background: white; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; padding: 8px; font-weight: bold; font-size: 18px; box-shadow: 0 5px 10px rgba(0,0,0,0.4); border: 1px solid #ccc; position: absolute; transition: 0.3s ease; }
-        .kirmizi { color: #e74c3c; }
-        .siyah { color: #2c3e50; }
-        .el .kart { position: relative; cursor: pointer; }
-        .oyuncu-etiket { font-size: 18px; font-weight: bold; color: var(--gold); margin: 5px 0; }
-
-        /* Bilgi Alanları */
-        #deste-bilgi { background: rgba(255, 255, 255, 0.1); padding: 5px 15px; border-radius: 20px; font-size: 14px; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.2); }
-        table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; margin-top: 10px; color: white; background: rgba(0,0,0,0.3); }
-        th, td { padding: 8px; border: 1px solid rgba(241, 196, 15, 0.2); }
-        th { background: var(--gold); color: black; }
-        .detay-text { font-size: 11px; color: #ddd; display: block; margin-top: 4px; line-height: 1.4; }
-        .badge-detay { background: rgba(255,255,255,0.15); padding: 1px 4px; border-radius: 4px; margin: 0 2px; }
+        /* Linkler */
+        .form-link { font-size: 13px; margin-top: 15px; color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
@@ -59,14 +216,17 @@
     <h1>PİŞTİ PRO</h1>
 
     <div id="giris-ekrani" class="panel">
-        <h2 id="form-baslik" style="color: var(--gold); margin-bottom: 20px;">Giriş Yap</h2>
+        <h2 id="form-baslik" style="color: var(--gold); margin: 0 0 20px 0;">Giriş Yap</h2>
+        
         <div id="kayit-ozel-alan" style="display: none;">
-            <input type="text" id="adSoyad" placeholder="Ad Soyad" style="width: 85%;">
+            <input type="text" id="adSoyad" placeholder="Ad Soyad">
         </div>
-        <input type="email" id="email" placeholder="E-posta" style="width: 85%;">
-        <input type="password" id="sifre" placeholder="Şifre" style="width: 85%;">
+        
+        <input type="email" id="email" placeholder="E-posta">
+        <input type="password" id="sifre" placeholder="Şifre">
+        
         <div style="margin-top: 10px;">
-            <button id="ana-islem-btn" onclick="girisYap()" style="background:#3498db; color:white;">Giriş Yap</button>
+            <button id="ana-islem-btn" onclick="girisYap()" class="btn-blue">Giriş Yap</button>
             <p id="form-degistir-text" class="form-link">
                 Hesabınız yok mu? <span onclick="toggleForm('kayit')" style="color:var(--gold); cursor:pointer; text-decoration:underline;">Kayıt Ol</span>
             </p>
@@ -74,42 +234,47 @@
     </div>
 
     <div id="lobi-ekrani" class="panel" style="display:none;">
-        <button class="cikis-yap-btn" onclick="otaturumuKapat()">Oturumu Kapat</button>
-        <div id="profil-bilgi" style="margin-bottom:15px; color:var(--gold); border-bottom:1px solid #444; padding-bottom:10px;"></div>
-        <div style="display: flex; gap: 10px; align-items: center; justify-content: center; margin-bottom: 10px;">
+        <button class="cikis-yap-btn" onclick="otaturumuKapat()">Çıkış</button>
+        
+        <div id="profil-bilgi"></div>
+        
+        <div class="input-group">
             <select id="mod-secim">
-                <option value="bot">Bot (Tek)</option>
-                <option value="2">2 Kişilik</option>
-                <option value="4">Eşli (2v2)</option>
+                <option value="bot">🤖 Bot (Tek)</option>
+                <option value="2">👥 2 Kişilik</option>
+                <option value="4">🤝 Eşli (2v2)</option>
             </select>
-            <input type="number" id="bitis-puani" value="101" style="width:60px;">
+            <input type="number" id="bitis-puani" value="101" placeholder="Puan">
         </div>
+        
         <button onclick="masaKur()">Masa Kur</button>
-        <button onclick="liderlikTablosuGoster()" style="background:#9b59b6; color:white;">Liderlik Tablosu</button>
-        <div id="liderlik-listesi"></div>
-        <hr>
-        <div id="masa-listesi">Masalar yükleniyor...</div>
+        <button onclick="liderlikTablosuGoster()" class="btn-purple">🏆 Liderlik Tablosu</button>
+        
+        <div id="liderlik-listesi" style="margin-top: 15px;"></div>
+        
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+        <div id="masa-listesi" style="text-align: left;">Masalar yükleniyor...</div>
     </div>
 
     <div id="oyun-alani">
-        <button class="ayril-btn" onclick="oyundanAyril()">Masadan Ayrıl</button>
+        <button class="ayril-btn btn-red" onclick="oyundanAyril()" style="width: auto; position: absolute; top: 0; right: 0; padding: 6px 15px; font-size: 12px; z-index: 100;">Ayrıl</button>
         
         <div id="aktif-el-display" class="el-sayaci">1. El</div>
         
         <div id="rakip-ismi" class="oyuncu-etiket">Oyuncular Bekleniyor...</div>
-        <div id="deste-bilgi">Destede Kalan: 52</div>
-        <div id="durum" style="font-weight: bold; color: var(--gold); margin-bottom: 5px;">Bağlanılıyor...</div>
+        <div id="deste-bilgi" style="font-size: 12px; opacity: 0.6; margin-bottom: 5px;">Destede Kalan: 52</div>
+        <div id="durum" style="font-weight: bold; color: var(--gold); margin-bottom: 5px; font-size: 14px;">Bağlanılıyor...</div>
         
         <div class="masa" id="yerdeki-kartlar"></div>
         
         <div id="benim-ismim" class="oyuncu-etiket">Siz</div>
         <div class="el" id="benim-elim"></div>
         
-        <div id="skor-tablosu-konteynir" style="width: 90%; max-width: 600px; margin-top: 20px;">
+        <div id="skor-tablosu-konteynir" style="width: 100%; margin-top: 20px; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px;">
             <table>
                 <thead>
                     <tr>
-                        <th>El No</th>
+                        <th>El</th>
                         <th id="th-oyuncu1">1. Taraf</th>
                         <th id="th-oyuncu2">2. Taraf</th>
                     </tr>
@@ -150,7 +315,7 @@
             if(mod === 'kayit') {
                 kayitAlani.style.display = 'block'; baslik.textContent = 'Kayıt Ol'; btn.textContent = 'Kayıt Ol';
                 btn.onclick = () => window.kayitOl();
-                text.innerHTML = `Zaten hesabınız var mı? <span onclick="toggleForm('giris')" style="color:var(--gold); cursor:pointer;">Giriş Yap</span>`;
+                text.innerHTML = `Zaten hesabınız var mı? <span onclick="toggleForm('giris')" style="color:var(--gold); cursor:pointer; text-decoration:underline;">Giriş Yap</span>`;
             } else {
                 kayitAlani.style.display = 'none'; baslik.textContent = 'Giriş Yap'; btn.textContent = 'Giriş Yap';
                 btn.onclick = () => window.girisYap();
@@ -177,7 +342,7 @@
             if(user) { 
                 aktifUser = user; document.getElementById('giris-ekrani').style.display='none'; document.getElementById('lobi-ekrani').style.display='block';
                 onValue(ref(db, `users/${user.uid}`), s => {
-                    const d = s.val(); if(d) { benimIsmim = d.adSoyad; document.getElementById('profil-bilgi').innerHTML = `<b>${d.adSoyad}</b><br>Genel Puan: ${d.genelPuan || 0}`; }
+                    const d = s.val(); if(d) { benimIsmim = d.adSoyad; document.getElementById('profil-bilgi').innerHTML = `<b>${d.adSoyad}</b><br>Genel Puan: <span style="color:var(--gold)">${d.genelPuan || 0}</span>`; }
                 });
                 lobiTakip(); 
             } else {
@@ -194,10 +359,10 @@
                     if(data[id].durum === "bekliyor") {
                         const count = Object.keys(data[id].oyuncular).length;
                         const modStr = data[id].mod === "4" ? "Eşli" : "2 Kişilik";
-                        const div = document.createElement('div'); div.style.margin = "10px 0";
+                        const div = document.createElement('div');
                         const isOwner = data[id].oyuncular.oyuncu1.uid === aktifUser.uid;
-                        div.innerHTML = `<span>[${modStr}] ${data[id].oyuncular.oyuncu1.isim} Masası (${count}/${data[id].mod === "4" ? 4 : 2})</span> ` + 
-                            (isOwner ? `<button onclick="masaSil('${id}')" style="width: auto; padding: 5px 15px; background: #e74c3c;">Masayı Sil</button>` : `<button onclick="masaKatil('${id}')" style="width: auto; padding: 5px 15px;">Katıl</button>`);
+                        div.innerHTML = `<span><b>${data[id].oyuncular.oyuncu1.isim}</b> (${modStr})</span> ` + 
+                            (isOwner ? `<button onclick="masaSil('${id}')" class="btn-red" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Sil</button>` : `<button onclick="masaKatil('${id}')" class="btn-blue" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Katıl</button>`);
                         list.appendChild(div);
                     }
                 }
@@ -245,7 +410,6 @@
             const yer = document.getElementById('yerdeki-kartlar'), elDiv = document.getElementById('benim-elim');
             const elSayaci = document.getElementById('aktif-el-display');
             
-            // El Numarası Güncelleme
             const guncelEl = (data.skorGecmisi ? data.skorGecmisi.length : 0) + 1;
             elSayaci.textContent = `${guncelEl}. El`;
 
@@ -361,12 +525,12 @@
                 t1 = players[0].puan + players[2].puan; t2 = players[1].puan + players[3].puan;
                 t1k = players[0].count + players[2].count; t2k = players[1].count + players[3].count;
                 let pisti1 = players[0].pisti + players[2].pisti, pisti2 = players[1].pisti + players[3].pisti;
-                det1 = (pisti1 > 0 ? `<span class="badge-detay">${pisti1} Pişti</span> ` : "") + [players[0].detay, players[2].detay].filter(Boolean).join(", ");
-                det2 = (pisti2 > 0 ? `<span class="badge-detay">${pisti2} Pişti</span> ` : "") + [players[1].detay, players[3].detay].filter(Boolean).join(", ");
+                det1 = (pisti1 > 0 ? `<span class="badge-detay" style="background:rgba(255,255,255,0.2); padding:0 3px; border-radius:3px;">${pisti1} Pişti</span> ` : "") + [players[0].detay, players[2].detay].filter(Boolean).join(", ");
+                det2 = (pisti2 > 0 ? `<span class="badge-detay" style="background:rgba(255,255,255,0.2); padding:0 3px; border-radius:3px;">${pisti2} Pişti</span> ` : "") + [players[1].detay, players[3].detay].filter(Boolean).join(", ");
             } else {
                 t1 = players[0].puan; t2 = players[1].puan; t1k = players[0].count; t2k = players[1].count;
-                det1 = (players[0].pisti > 0 ? `<span class="badge-detay">${players[0].pisti} Pişti</span> ` : "") + players[0].detay;
-                det2 = (players[1].pisti > 0 ? `<span class="badge-detay">${players[1].pisti} Pişti</span> ` : "") + players[1].detay;
+                det1 = (players[0].pisti > 0 ? `<span class="badge-detay" style="background:rgba(255,255,255,0.2); padding:0 3px; border-radius:3px;">${players[0].pisti} Pişti</span> ` : "") + players[0].detay;
+                det2 = (players[1].pisti > 0 ? `<span class="badge-detay" style="background:rgba(255,255,255,0.2); padding:0 3px; border-radius:3px;">${players[1].pisti} Pişti</span> ` : "") + players[1].detay;
             }
 
             if(t1k > t2k) { t1 += 3; det1 += (det1 ? ", " : "") + "Kart Fazlası"; }
@@ -396,7 +560,7 @@
         // YARDIMCI ARAÇLAR
         function kartHtml(k, i, t) {
             return `<div class="kart ${k.color}" ${t ? `onclick="kartAt(${i})"` : ""}>
-                <div>${k.value}</div><div style="font-size:35px; text-align:center">${k.suit}</div><div style="transform:rotate(180deg)">${k.value}</div>
+                <div style="font-size:14px;">${k.value}</div><div style="font-size:28px; text-align:center">${k.suit}</div><div style="transform:rotate(180deg); font-size:14px;">${k.value}</div>
             </div>`;
         }
 
@@ -409,7 +573,7 @@
         function skorTablosuGuncelle(data) {
             const govde = document.getElementById('tablo-govde'); govde.innerHTML = "";
             (data.skorGecmisi || []).forEach((s, i) => { 
-                govde.innerHTML += `<tr><td>${i+1}. El</td><td>${s.oyuncu1} <span class="detay-text">${s.d1 || ""}</span></td><td>${s.oyuncu2} <span class="detay-text">${s.d2 || ""}</span></td></tr>`; 
+                govde.innerHTML += `<tr><td>${i+1}</td><td>${s.oyuncu1} <br><span style="font-size:10px; opacity:0.7">${s.d1 || ""}</span></td><td>${s.oyuncu2} <br><span style="font-size:10px; opacity:0.7">${s.d2 || ""}</span></td></tr>`; 
             });
             govde.innerHTML += `<tr style="color:var(--gold); font-weight:bold; background:rgba(255,255,255,0.1)"><td>TOPLAM</td><td>${data.oyuncular.oyuncu1.toplamSkor}</td><td>${data.oyuncular.oyuncu2.toplamSkor}</td></tr>`;
         }
@@ -435,16 +599,15 @@
         window.liderlikTablosuGoster = async () => {
             const s = await get(ref(db, 'users/')); const data = s.val();
             let arr = data ? Object.values(data).sort((a,b) => (b.genelPuan || 0) - (a.genelPuan || 0)) : [];
-            let html = `<h3>🏆 Liderlik Tablosu</h3><table><thead><tr><th>Oyuncu</th><th>Puan</th><th>O/G</th><th>Form</th></tr></thead><tbody>`;
+            let html = `<h3>🏆 Liderlik Tablosu</h3><table><thead><tr><th>Oyuncu</th><th>Puan</th><th>Maçlar</th></tr></thead><tbody>`;
             arr.forEach(u => {
-                let fHtml = ''; (u.sonBes || []).forEach(x => fHtml += `<span class="son-bes-item ${x==='G'?'win':'lose'}">${x}</span>`);
-                html += `<tr><td>${u.adSoyad}</td><td>${u.genelPuan||0}</td><td>${u.oyunSayisi||0}/${u.galibiyet||0}</td><td>${fHtml}</td></tr>`;
+                html += `<tr><td>${u.adSoyad}</td><td style="color:var(--gold); font-weight:bold">${u.genelPuan||0}</td><td>${u.oyunSayisi||0}</td></tr>`;
             });
             document.getElementById('liderlik-listesi').innerHTML = html + "</tbody></table>";
         };
 
         window.oyundanAyril = async () => {
-            if(confirm("Masadan ayrılmak üzeresiniz. Devam eden oyundan çıkarsanız 100 puan ceza alırsınız?")) {
+            if(confirm("Masadan ayrılmak üzeresiniz. Puan kaybedebilirsiniz?")) {
                 const snap = await get(ref(db, `lobiler/${aktifMasaId}`)); const oyun = snap.val();
                 if(oyun && oyun.durum === "basladi" && oyun.mod !== "bot") {
                     const r = ref(db, `users/${aktifUser.uid}`); const s = await get(r); const d = s.val();
