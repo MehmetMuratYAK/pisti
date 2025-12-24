@@ -30,6 +30,7 @@
             letter-spacing: 2px;
             background: -webkit-linear-gradient(var(--gold), var(--gold-dark));
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             text-shadow: 0px 4px 10px rgba(0,0,0,0.3);
             text-align: center;
@@ -195,6 +196,11 @@
             align-items: center;
             font-size: 13px;
         }
+        
+        #masa-listesi .buton-grubu {
+            display: flex;
+            gap: 5px;
+        }
 
         /* EFECTLER */
         @keyframes pistiPop {
@@ -253,6 +259,7 @@
         <div id="liderlik-listesi" style="margin-top: 15px;"></div>
         
         <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0;">
+        <h3 style="font-size:16px; margin:0 0 10px 0; color:var(--gold)">Açık Masalar</h3>
         <div id="masa-listesi" style="text-align: left;">Masalar yükleniyor...</div>
     </div>
 
@@ -354,15 +361,44 @@
         function lobiTakip() {
             onValue(ref(db, 'lobiler/'), snap => {
                 const list = document.getElementById('masa-listesi'); list.innerHTML = "";
-                const data = snap.val(); if(!data) { list.innerHTML = "Aktif masa yok."; return; }
+                const data = snap.val(); 
+                
+                if(!data) { list.innerHTML = "Aktif masa yok."; return; }
+                
                 for(let id in data) {
                     if(data[id].durum === "bekliyor") {
-                        const count = Object.keys(data[id].oyuncular).length;
+                        const count = data[id].oyuncular ? Object.keys(data[id].oyuncular).length : 0;
                         const modStr = data[id].mod === "4" ? "Eşli" : "2 Kişilik";
                         const div = document.createElement('div');
+                        
+                        // Rol kontrolü yap
                         const isOwner = data[id].oyuncular.oyuncu1.uid === aktifUser.uid;
-                        div.innerHTML = `<span><b>${data[id].oyuncular.oyuncu1.isim}</b> (${modStr})</span> ` + 
-                            (isOwner ? `<button onclick="masaSil('${id}')" class="btn-red" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Sil</button>` : `<button onclick="masaKatil('${id}')" class="btn-blue" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Katıl</button>`);
+                        let myExistingRole = null;
+                        
+                        // Zaten masada mıyım kontrolü (Oyuncu 1 değilsem ama 2,3,4 isem)
+                        if(data[id].oyuncular) {
+                            Object.entries(data[id].oyuncular).forEach(([key, val]) => {
+                                if(val.uid === aktifUser.uid) myExistingRole = key;
+                            });
+                        }
+
+                        let buttonHtml = "";
+                        
+                        if (isOwner) {
+                            // Masa sahibi hem dönebilir hem silebilir
+                            buttonHtml = `
+                                <button onclick="masaGiris('${id}', 'oyuncu1')" class="btn-blue" style="width:auto; padding:5px 10px; font-size:12px; margin:0 5px 0 0;">Oyuna Dön</button>
+                                <button onclick="masaSil('${id}')" class="btn-red" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Sil</button>
+                            `;
+                        } else if (myExistingRole) {
+                            // Zaten masadayım (refresh sonrası vs)
+                            buttonHtml = `<button onclick="masaGiris('${id}', '${myExistingRole}')" class="btn-purple" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Devam Et</button>`;
+                        } else {
+                            // Yeni katılımcı
+                            buttonHtml = `<button onclick="masaKatil('${id}')" class="btn-blue" style="width:auto; padding:5px 10px; font-size:12px; margin:0;">Katıl</button>`;
+                        }
+
+                        div.innerHTML = `<span><b>${data[id].oyuncular.oyuncu1.isim}</b> (${modStr})</span> <div class="buton-grubu">${buttonHtml}</div>`;
                         list.appendChild(div);
                     }
                 }
@@ -382,28 +418,71 @@
                 yeniMasa.oyuncular.oyuncu2 = { uid: "BOT", isim: "Bilgisayar", puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 }; 
                 const d = desteYap(); yeniMasa.masaKartlari = d.splice(0,4); yeniMasa.oyuncular.oyuncu1.el = d.splice(0,4); yeniMasa.oyuncular.oyuncu2.el = d.splice(0,4); yeniMasa.deste = d; 
             }
-            await set(ref(db, 'lobiler/' + id), yeniMasa); masaGiris(id, "oyuncu1");
+            await set(ref(db, 'lobiler/' + id), yeniMasa); 
+            window.masaGiris(id, "oyuncu1");
         };
 
         window.masaKatil = async (id) => {
-            const snap = await get(ref(db, `lobiler/${id}`)); const oyun = snap.val();
-            const idx = Object.keys(oyun.oyuncular).length + 1; const rol = "oyuncu" + idx;
-            let up = { [`oyuncular/${rol}`]: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 } };
-            const max = oyun.mod === "4" ? 4 : 2;
-            if(idx === max) {
-                const d = desteYap(); up.durum = "basladi"; up.masaKartlari = d.splice(0,4); up.deste = d;
-                for(let i=1; i<=max; i++) up[`oyuncular/oyuncu${i}/el`] = d.splice(0,4);
+            try {
+                const snap = await get(ref(db, `lobiler/${id}`)); 
+                const oyun = snap.val();
+                
+                if (!oyun) { alert("Masa bulunamadı."); return; }
+
+                // Kullanıcı zaten masada mı kontrol et (Hata önleyici)
+                let existingRole = null;
+                if(oyun.oyuncular) {
+                    Object.entries(oyun.oyuncular).forEach(([key, val]) => {
+                        if(val.uid === aktifUser.uid) existingRole = key;
+                    });
+                }
+
+                if(existingRole) {
+                    window.masaGiris(id, existingRole);
+                    return;
+                }
+
+                // Yeni oyuncu ekle
+                const idx = Object.keys(oyun.oyuncular).length + 1; 
+                const rol = "oyuncu" + idx;
+                
+                let up = { [`oyuncular/${rol}`]: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 } };
+                const max = oyun.mod === "4" ? 4 : 2;
+                
+                if(idx === max) {
+                    const d = desteYap(); up.durum = "basladi"; up.masaKartlari = d.splice(0,4); up.deste = d;
+                    for(let i=1; i<=max; i++) up[`oyuncular/oyuncu${i}/el`] = d.splice(0,4);
+                }
+                
+                await update(ref(db, `lobiler/${id}`), up); 
+                window.masaGiris(id, rol);
+            } catch(e) {
+                console.error(e);
+                alert("Masaya katılırken hata oluştu: " + e.message);
             }
-            await update(ref(db, `lobiler/${id}`), up); masaGiris(id, rol);
         };
 
-        function masaGiris(id, rol) {
-            aktifMasaId = id; benimRolum = rol;
-            document.getElementById('lobi-ekrani').style.display = 'none'; document.getElementById('oyun-alani').style.display = 'flex';
+        window.masaGiris = (id, rol) => {
+            aktifMasaId = id; 
+            benimRolum = rol;
+            
+            // Ekran değiştir
+            document.getElementById('lobi-ekrani').style.display = 'none'; 
+            document.getElementById('oyun-alani').style.display = 'flex';
+            
+            // Masayı dinlemeye başla
             onValue(ref(db, `lobiler/${id}`), snap => { 
-                const data = snap.val(); if(data) { oyunGuncelle(data); if(data.durum === "basladi" && data.mod === "bot" && data.sira === "oyuncu2") setTimeout(botHamlesi, 1000); } 
+                const data = snap.val(); 
+                if(data) { 
+                    oyunGuncelle(data); 
+                    if(data.durum === "basladi" && data.mod === "bot" && data.sira === "oyuncu2") setTimeout(botHamlesi, 1000); 
+                } else {
+                    // Masa silindiyse lobiye at
+                    alert("Masa kapatıldı.");
+                    location.reload();
+                }
             });
-        }
+        };
 
         // OYUN AKIŞI
         function oyunGuncelle(data) {
@@ -616,6 +695,9 @@
                 location.reload();
             }
         };
+
+        // Bu fonksiyonu global scope'a açıkça atayalım
+        window.masaGiris = masaGiris;
     </script>
 </body>
 </html>
