@@ -29,8 +29,9 @@
             text-transform: uppercase;
             letter-spacing: 2px;
             background: -webkit-linear-gradient(var(--gold), var(--gold-dark));
+            background: linear-gradient(var(--gold), var(--gold-dark)); /* Standart eklendi */
             -webkit-background-clip: text;
-            background-clip: text;
+            background-clip: text; /* Standart eklendi */
             -webkit-text-fill-color: transparent;
             text-shadow: 0px 4px 10px rgba(0,0,0,0.3);
             text-align: center;
@@ -429,7 +430,7 @@
                 
                 if (!oyun) { alert("Masa bulunamadı."); return; }
 
-                // Kullanıcı zaten masada mı kontrol et (Hata önleyici)
+                // Kullanıcı zaten masada mı kontrol et
                 let existingRole = null;
                 if(oyun.oyuncular) {
                     Object.entries(oyun.oyuncular).forEach(([key, val]) => {
@@ -442,20 +443,50 @@
                     return;
                 }
 
-                // Yeni oyuncu ekle
+                // Yeni oyuncu sırasını belirle
                 const idx = Object.keys(oyun.oyuncular).length + 1; 
                 const rol = "oyuncu" + idx;
                 
-                let up = { [`oyuncular/${rol}`]: { uid: aktifUser.uid, isim: benimIsmim, puan: 0, alinan: [], toplamSkor: 0, pistiSayisi: 0 } };
+                // 1. ADIM: Oyuncu objesini yerel olarak hazırla
+                let yeniOyuncu = { 
+                    uid: aktifUser.uid, 
+                    isim: benimIsmim, 
+                    puan: 0, 
+                    alinan: [], 
+                    toplamSkor: 0, 
+                    pistiSayisi: 0 
+                };
+
+                let up = {};
                 const max = oyun.mod === "4" ? 4 : 2;
                 
+                // 2. ADIM: Eğer masa dolduysa kartları dağıt
                 if(idx === max) {
-                    const d = desteYap(); up.durum = "basladi"; up.masaKartlari = d.splice(0,4); up.deste = d;
-                    for(let i=1; i<=max; i++) up[`oyuncular/oyuncu${i}/el`] = d.splice(0,4);
+                    const d = desteYap(); 
+                    up.durum = "basladi"; 
+                    up.masaKartlari = d.splice(0,4); 
+                    up.deste = d;
+                    
+                    for(let i=1; i<=max; i++) {
+                        let dagitilacakEl = d.splice(0,4);
+                        
+                        // Eğer kartı şu an katılan oyuncuya veriyorsak,
+                        // update path'i yerine direkt objenin içine koyuyoruz.
+                        if ("oyuncu" + i === rol) {
+                            yeniOyuncu.el = dagitilacakEl;
+                        } else {
+                            // Diğer oyuncular zaten veritabanında var
+                            up[`oyuncular/oyuncu${i}/el`] = dagitilacakEl;
+                        }
+                    }
                 }
+                
+                // 3. ADIM: Yeni oyuncuyu (varsa kartlarıyla birlikte) tek seferde ekle
+                up[`oyuncular/${rol}`] = yeniOyuncu;
                 
                 await update(ref(db, `lobiler/${id}`), up); 
                 window.masaGiris(id, rol);
+
             } catch(e) {
                 console.error(e);
                 alert("Masaya katılırken hata oluştu: " + e.message);
@@ -696,7 +727,6 @@
             }
         };
 
-        // Bu fonksiyonu global scope'a açıkça atayalım
         window.masaGiris = masaGiris;
     </script>
 </body>
