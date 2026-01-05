@@ -252,6 +252,49 @@
         #liderlik-listesi table { font-size: 11px; }
         .win-rate { color: #2ecc71; font-weight: bold; }
         .badge-rank { display: inline-block; width: 20px; height: 20px; background: rgba(255,255,255,0.1); border-radius: 50%; line-height: 20px; }
+        /* --- YENİ EKLENEN CANLI SKOR PANELİ --- */
+        #mini-skor-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.3) 50%, rgba(0,0,0,0.6) 100%);
+            width: 100%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 215, 0, 0.2);
+            margin-top: 35px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .mini-skor-taraf {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 40%;
+        }
+
+        .mini-isim {
+            font-size: 11px;
+            color: rgba(255,255,255,0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .mini-puan {
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--gold);
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+        }
+
+        .mini-ayrac {
+            font-size: 18px;
+            color: rgba(255,255,255,0.2);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -309,6 +352,17 @@
         </div>
 
         <button class="ayril-btn btn-red" onclick="oyundanAyril()" style="width: auto; position: absolute; top: 0; right: 0; padding: 6px 15px; font-size: 12px; z-index: 100;">Ayrıl</button>
+        <div id="mini-skor-board">
+            <div class="mini-skor-taraf">
+                <span id="mini-isim1" class="mini-isim">1. Taraf</span>
+                <span id="mini-puan1" class="mini-puan">0</span>
+            </div>
+            <div class="mini-ayrac">-</div>
+            <div class="mini-skor-taraf">
+                <span id="mini-isim2" class="mini-isim">2. Taraf</span>
+                <span id="mini-puan2" class="mini-puan">0</span>
+            </div>
+        </div>
         
         <div id="aktif-el-display" class="el-sayaci">1. El</div>
         
@@ -356,6 +410,7 @@
         const auth = getAuth(app);
 
         let aktifUser = null, aktifMasaId = null, benimRolum = null, benimIsmim = "";
+        let sonBildirimZamani = 0; // <--- YENİ EKLENEN SATIR
 
         // AUTH VE FORM İŞLEMLERİ
         window.toggleForm = (mod) => {
@@ -587,16 +642,51 @@
             const elSayaci = document.getElementById('aktif-el-display');
             const guncelEl = (data.skorGecmisi ? data.skorGecmisi.length : 0) + 1;
             elSayaci.textContent = `${guncelEl}. El`;
+            if(data.sonOlay && data.sonOlay.zaman !== sonBildirimZamani) {
+                sonBildirimZamani = data.sonOlay.zaman;
+                
+                // Bildirimi yapan kişinin ismini bul
+                let yapanIsim = "";
+                if(data.oyuncular && data.oyuncular[data.sonOlay.yapan]) {
+                    yapanIsim = data.oyuncular[data.sonOlay.yapan].isim;
+                }
+                
+                // Ekranda göster
+                pistiEfektiGoster(`${yapanIsim}: ${data.sonOlay.mesaj}`);
+            }
 
             document.getElementById('deste-bilgi').textContent = `Destede Kalan: ${data.deste ? data.deste.length : 0} kart`;
 
             if(data.mod === "4") {
                 document.getElementById('th-oyuncu1').textContent = `1. Takım`;
                 document.getElementById('th-oyuncu2').textContent = `2. Takım`;
-            } else {
+            } 
+            
+            else {
                 document.getElementById('th-oyuncu1').textContent = (data.oyuncular && data.oyuncular.oyuncu1) ? data.oyuncular.oyuncu1.isim : "Bekleniyor...";
                 document.getElementById('th-oyuncu2').textContent = (data.oyuncular && data.oyuncular.oyuncu2) ? data.oyuncular.oyuncu2.isim : "Bekleniyor...";
             }
+            // --- YENİ EKLENEN SKOR GÜNCELLEME KODU ---
+            let isim1 = "Bekleniyor...";
+            let isim2 = "Bekleniyor...";
+
+            if(data.mod === "4") {
+                isim1 = "1. Takım";
+                isim2 = "2. Takım";
+            } else {
+                if(data.oyuncular && data.oyuncular.oyuncu1) isim1 = data.oyuncular.oyuncu1.isim;
+                if(data.oyuncular && data.oyuncular.oyuncu2) isim2 = data.oyuncular.oyuncu2.isim;
+            }
+
+            document.getElementById('mini-isim1').textContent = isim1;
+            document.getElementById('mini-isim2').textContent = isim2;
+
+            const p1Skor = (data.oyuncular && data.oyuncular.oyuncu1) ? (data.oyuncular.oyuncu1.toplamSkor || 0) : 0;
+            const p2Skor = (data.oyuncular && data.oyuncular.oyuncu2) ? (data.oyuncular.oyuncu2.toplamSkor || 0) : 0;
+
+            document.getElementById('mini-puan1').textContent = p1Skor;
+            document.getElementById('mini-puan2').textContent = p2Skor;
+            // ------------------------------------------
 
             if(data.durum === "bitti") {
                 yer.innerHTML = ""; elDiv.innerHTML = "";
@@ -640,36 +730,82 @@
             if(hamle.updates.durum === "hesapla") finalHesapla(aktifMasaId);
         };
 
-        function calculateMove(oyun, suankiSira, idx) {
-            let el = [...oyun.oyuncular[suankiSira].el]; let atilan = el.splice(idx, 1)[0];
-            let masa = oyun.masaKartlari || []; let pPuan = oyun.oyuncular[suankiSira].puan || 0;
+function calculateMove(oyun, suankiSira, idx) {
+            let el = [...oyun.oyuncular[suankiSira].el]; 
+            let atilan = el.splice(idx, 1)[0];
+            let masa = oyun.masaKartlari || []; 
+            let pPuan = oyun.oyuncular[suankiSira].puan || 0;
             let pSayisi = oyun.oyuncular[suankiSira].pistiSayisi || 0;
-            let alinan = oyun.oyuncular[suankiSira].alinan || []; let sonKazan = oyun.sonKazan;
+            let alinan = oyun.oyuncular[suankiSira].alinan || []; 
+            let sonKazan = oyun.sonKazan;
             let max = oyun.mod === "4" ? 4 : 2;
             let siradaki = "oyuncu" + ((parseInt(suankiSira.replace("oyuncu", "")) % max) + 1);
 
+            // --- YENİ EKLENEN KISIM (OLAY KAYDI) ---
+            let olayMesaji = "";
+            let olayZamani = Date.now();
+            // ---------------------------------------
+
             if(masa.length > 0) {
                 let ust = masa[masa.length - 1];
+                
+                // KART ALMA DURUMU KONTROLÜ
                 if(atilan.value === "J" || atilan.value === ust.value) {
                     sonKazan = suankiSira;
-                    let mText = atilan.value === "J" ? "VALE İLE ALDI!" : `${atilan.value} EŞLEMESİ!`;
-                    if(masa.length === 1 && atilan.value === {value: ust.value}.value) { 
-                        mText = atilan.value === "J" ? "VALE PİŞTİ!" : "PİŞTİ!";
-                        pPuan += (atilan.value === "J") ? 25 : 10; pSayisi += 1;
+                    
+                    // Mesajı Belirle
+                    if(atilan.value === "J" && masa.length > 0) {
+                        olayMesaji = "VALE İLE ALDI!";
+                    } else {
+                        olayMesaji = `${atilan.value} EŞLEMESİ!`;
                     }
-                    pistiEfektiGoster(mText); alinan = [...alinan, ...masa, atilan]; masa = [];
-                } else masa.push(atilan);
-            } else masa.push(atilan);
+
+                    // PİŞTİ KONTROLÜ
+                    if(masa.length === 1 && atilan.value === ust.value) { 
+                        if(atilan.value === "J") {
+                            olayMesaji = "VALE PİŞTİ!!!";
+                            pPuan += 25; // Bazı kurallarda 20'dir, isteğe göre düzeltilebilir
+                        } else {
+                            olayMesaji = "PİŞTİ!!!";
+                            pPuan += 10;
+                        }
+                        pSayisi += 1;
+                    }
+                    
+                    alinan = [...alinan, ...masa, atilan]; 
+                    masa = [];
+                } else {
+                    masa.push(atilan);
+                }
+            } else {
+                masa.push(atilan);
+            }
 
             let updates = { masaKartlari: masa, sira: siradaki, sonKazan: sonKazan };
-            updates[`oyuncular/${suankiSira}/el`] = el; updates[`oyuncular/${suankiSira}/puan`] = pPuan; 
-            updates[`oyuncular/${suankiSira}/pistiSayisi`] = pSayisi; updates[`oyuncular/${suankiSira}/alinan`] = alinan;
+            updates[`oyuncular/${suankiSira}/el`] = el; 
+            updates[`oyuncular/${suankiSira}/puan`] = pPuan; 
+            updates[`oyuncular/${suankiSira}/pistiSayisi`] = pSayisi; 
+            updates[`oyuncular/${suankiSira}/alinan`] = alinan;
+            
+            // Eğer bir olay olduysa veritabanına yaz
+            if(olayMesaji !== "") {
+                updates.sonOlay = {
+                    mesaj: olayMesaji,
+                    yapan: suankiSira,
+                    zaman: olayZamani
+                };
+            }
             
             let bittiMi = true;
-            for(let i=1; i<=max; i++) { if((i === parseInt(suankiSira.replace("oyuncu","")) ? el : (oyun.oyuncular["oyuncu"+i].el || [])).length > 0) bittiMi = false; }
+            for(let i=1; i<=max; i++) { 
+                let oEl = (i === parseInt(suankiSira.replace("oyuncu",""))) ? el : (oyun.oyuncular["oyuncu"+i].el || []);
+                if(oEl.length > 0) bittiMi = false; 
+            }
+
             if(bittiMi) {
                 if(oyun.deste && oyun.deste.length > 0) {
-                    let d = [...oyun.deste]; for(let i=1; i<=max; i++) updates[`oyuncular/oyuncu${i}/el`] = d.splice(0, 4);
+                    let d = [...oyun.deste]; 
+                    for(let i=1; i<=max; i++) updates[`oyuncular/oyuncu${i}/el`] = d.splice(0, 4);
                     updates.deste = d;
                 } else updates.durum = "hesapla";
             }
@@ -746,20 +882,27 @@
         }
 
         // --- YENİ EKLENEN FONKSİYON: MAÇ SONU SKOR KAYDI ---
+// --- GÜNCELLENEN FONKSİYON: MAÇ SONU SKOR KAYDI (BOT HARİÇ & FARK KADAR PUAN) ---
         async function macSonuIslemleri(oyun, score1, score2) {
+            // GÜVENLİK KİLİDİ: Eğer oyun modu 'bot' ise hemen durdur, puan işlemi yapma.
+            if (oyun.mod === "bot") return;
+
+            // 1. İki taraf arasındaki puan farkını hesapla (Mutlak değer)
+            const puanFarki = Math.abs(score1 - score2);
+
             // Kazanan tarafı belirle
-            // 2 kişilikte: Oyuncu 1 vs Oyuncu 2
-            // 4 kişilikte: Takım 1 (Oyuncu 1,3) vs Takım 2 (Oyuncu 2,4)
-            
             const team1Won = score1 > score2;
-            const isDraw = score1 === score2;
+            const isDraw = score1 === score2; // Beraberlik durumu
 
             const players = oyun.oyuncular;
             
             // Her bir oyuncu için işlem yap
             for(let key in players) {
                 const p = players[key];
-                if(p.uid && p.uid !== "BOT") { // Sadece gerçek oyuncular
+                
+                // Sadece gerçek oyuncular ve UID'si olanlar için işlem yap
+                if(p.uid && p.uid !== "BOT") { 
+                    
                     // Hangi takımda? (Oyuncu 1 ve 3 -> Takım 1 / Oyuncu 2 ve 4 -> Takım 2)
                     const pIndex = parseInt(key.replace("oyuncu", ""));
                     const isTeam1 = (pIndex % 2 !== 0); 
@@ -775,9 +918,13 @@
                             
                             if (isWinner) {
                                 userData.galibiyet = (userData.galibiyet || 0) + 1;
-                                userData.genelPuan = (userData.genelPuan || 0) + 50; // Galibiyet puanı
+                                // KAZANAN: Fark kadar puan ekle
+                                userData.genelPuan = (userData.genelPuan || 0) + puanFarki; 
                             } else if (!isDraw) {
-                                userData.genelPuan = (userData.genelPuan || 0) - 20; // Mağlubiyet cezası
+                                // KAYBEDEN: Fark kadar puan çıkar
+                                userData.genelPuan = (userData.genelPuan || 0) - puanFarki; 
+                                
+                                // Puanın eksiye düşmemesini istiyorsan bu kontrolü tut:
                                 if(userData.genelPuan < 0) userData.genelPuan = 0;
                             }
                         }
